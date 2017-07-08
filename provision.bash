@@ -2,7 +2,7 @@
 
 PROJECT="nettaton"
 ENVIRONMENT="${1}"
-FUNC_LIST=(question answer updatescore getscore)
+FUNC_LIST=(question answer score user)
 
 if [[ -z $ENVIRONMENT ]]; then
   echo 'Need $1 set to environment'
@@ -29,7 +29,9 @@ if (( $? != 0 )); then
     --output text)
 fi
 
-sleep 5
+aws dynamodb wait table-exists \
+  --table-name ${TABLE_NAME}
+
 aws dynamodb tag-resource \
   --resource-arn ${DYNAMO_ARN} \
   --tags Key=project,Value=${PROJECT} Key=env,Value=${ENVIRONMENT}
@@ -82,7 +84,7 @@ fi
 #### Lambda ##################################################################
 for component in ${FUNC_LIST[@]}; do
   echo "Creating ${component} function"
-  cd ./"${component}"
+  cd ./cmd/"${component}"
 
   LAMBDA_NAME="${PROJECT}-${ENVIRONMENT}-${component}"
 
@@ -104,5 +106,5 @@ for component in ${FUNC_LIST[@]}; do
     --tags project=${PROJECT},env=${ENVIRONMENT}
 
   rm -vf handler.{so,zip}
-  cd ..
+  cd -
 done
