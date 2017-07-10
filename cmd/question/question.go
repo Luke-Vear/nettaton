@@ -13,10 +13,12 @@ import (
 // Handle is the entrypoint for the shim.
 func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
-	rand.Seed(time.Now().UTC().UnixNano())
-
 	headers := map[string]string{"Content-Type": "application/json"}
 
+	// Need to seed for random question generation below.
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	// Generate and marshal random IP, network and question into response.
 	body, _ := json.Marshal(struct {
 		IPAddress    string `json:"ipAddress"`
 		Network      string `json:"network"`

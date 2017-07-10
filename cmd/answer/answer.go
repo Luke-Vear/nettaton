@@ -33,6 +33,7 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		}, err
 	}
 
+	// Attempt to parse ip address and subnet.
 	nip, cidr, err := subnet.Parse(cr.IPAddress, cr.Network)
 	if err != nil {
 		return platform.Response{
@@ -42,8 +43,17 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		}, err
 	}
 
+	// Test if question type is valid, then resolve answer.
+	if _, ok := subnet.QuestionFuncMap[cr.QuestionKind]; !ok {
+		return platform.Response{
+			StatusCode: "400",
+			Headers:    headers,
+			Body:       fmt.Sprintf("{\"Error\": \"Invalid questionKind %v\"}", cr.QuestionKind),
+		}, err
+	}
 	actualAnswer := subnet.QuestionFuncMap[cr.QuestionKind](nip, cidr)
 
+	// Extract jwt from headers (if exists), parse user claim, update user scores.
 	if jwtString := platform.JWTFromEvt(evt); jwtString != "" {
 
 		userID, err := auth.UserID(jwtString, os.Getenv("SECRET"))
@@ -57,13 +67,14 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 		if err := platform.UpdateUserScore(cr.QuestionKind, userID, actualAnswer == cr.Answer); err != nil {
 			return platform.Response{
-				StatusCode: "400",
+				StatusCode: "500",
 				Headers:    headers,
 				Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
 			}, err
 		}
 	}
 
+	// Send actualAnswer back to client.
 	body, _ := json.Marshal(struct {
 		UserAnswer   string `json:"userAnswer"`
 		ActualAnswer string `json:"actualAnswer"`
