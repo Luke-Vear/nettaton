@@ -65,16 +65,14 @@ func RandomNetwork() string {
 }
 
 // RandomQuestionKind returns a kind of subnetting question.
-// TODO: parse incoming json for question types the front end wants.
 func RandomQuestionKind() string {
-	var qkinds = []string{
-		"first",
-		"last",
-		"broadcast",
-		"firstandlast",
-		"hostsinnet",
+
+	var questionKinds []string
+	for key := range QuestionFuncMap {
+		questionKinds = append(questionKinds, key)
 	}
-	return qkinds[r(len(qkinds))]
+
+	return questionKinds[r(len(QuestionFuncMap))]
 }
 
 // Parse parses a
