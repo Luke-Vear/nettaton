@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/Luke-Vear/nettaton/pkg/auth"
 	"github.com/Luke-Vear/nettaton/pkg/platform"
@@ -15,8 +14,8 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	headers := map[string]string{"Content-Type": "application/json"}
 
+	// Extract jwt from headers.
 	jwtString := platform.JWTFromEvt(evt)
-
 	if jwtString == "" {
 		return platform.Response{
 			StatusCode: "401",
@@ -25,7 +24,8 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		}, nil
 	}
 
-	userID, err := auth.UserID(jwtString, os.Getenv("SECRET"))
+	// Parse UserID claim.
+	userID, err := auth.UserID(jwtString)
 	if err != nil {
 		return platform.Response{
 			StatusCode: "401",
@@ -34,16 +34,24 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		}, err
 	}
 
-	// get scores from DB
-	_ = userID
+	// Define PK for query.
+	user := platform.NewUser()
+	user.UserID = userID
 
-	// marshall into response
+	// Get User from db.
+	if err := platform.GetUser(user); err != nil {
+		return platform.Response{
+			StatusCode: "500",
+			Headers:    headers,
+			Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
+		}, err
+	}
+
+	// Return only scores in response.
 	body, _ := json.Marshal(struct {
-		Score1 string `json:"score1"`
-		Score2 string `json:"score2"`
+		Scores map[string]*platform.QuestionScore `json:"scores"`
 	}{
-		Score1: "",
-		Score2: "",
+		Scores: user.Scores,
 	})
 
 	return platform.Response{
@@ -53,4 +61,5 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	}, nil
 }
 
+// Handle is invoked by the shim.
 func main() {}

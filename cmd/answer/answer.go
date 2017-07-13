@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/Luke-Vear/nettaton/pkg/auth"
 	"github.com/Luke-Vear/nettaton/pkg/platform"
@@ -53,10 +52,10 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	}
 	actualAnswer := subnet.QuestionFuncMap[cr.QuestionKind](nip, cidr)
 
-	// Extract jwt from headers (if exists), parse user claim, update user scores.
+	// Extract jwt from headers (if exists), parse user claim.
 	if jwtString := platform.JWTFromEvt(evt); jwtString != "" {
 
-		userID, err := auth.UserID(jwtString, os.Getenv("SECRET"))
+		userID, err := auth.UserID(jwtString)
 		if err != nil {
 			return platform.Response{
 				StatusCode: "401",
@@ -65,7 +64,27 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 			}, err
 		}
 
-		if err := platform.UpdateUserScore(cr.QuestionKind, userID, actualAnswer == cr.Answer); err != nil {
+		// Define PK for query.
+		user := platform.NewUser()
+		user.UserID = userID
+
+		// Get User from db.
+		if err := platform.GetUser(user); err != nil {
+			return platform.Response{
+				StatusCode: "500",
+				Headers:    headers,
+				Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
+			}, err
+		}
+
+		// Increment scores.
+		if actualAnswer == cr.Answer {
+			user.Scores[cr.QuestionKind].Correct++
+		}
+		user.Scores[cr.QuestionKind].Attempts++
+
+		// Put modified User back into db.
+		if err := platform.PutUser(user); err != nil {
 			return platform.Response{
 				StatusCode: "500",
 				Headers:    headers,

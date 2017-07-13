@@ -2,7 +2,11 @@
 
 PROJECT="nettaton"
 ENVIRONMENT="${1}"
-FUNC_LIST=(question answer score user)
+FUNC_LIST=(question answer score)
+
+#TODO
+#FUNC_LIST=(question answer score login register)
+
 
 if [[ -z $ENVIRONMENT ]]; then
   echo 'Need $1 set to environment'

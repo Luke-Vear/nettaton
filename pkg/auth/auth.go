@@ -2,12 +2,17 @@ package auth
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
+var (
+	secret = os.Getenv("SECRET")
+)
+
 // UserID checks the token and returns userId.
-func UserID(bearer string, secret string) (string, error) {
+func UserID(bearer string) (string, error) {
 
 	if bearer == "" {
 		return "", nil
@@ -23,6 +28,7 @@ func UserID(bearer string, secret string) (string, error) {
 		return "", err
 	}
 
+	// TODO
 	_ = token
 	return "USERNAME", nil
 }
