@@ -75,7 +75,7 @@ func RandomQuestionKind() string {
 	return questionKinds[r(len(QuestionFuncMap))]
 }
 
-// Parse parses a
+// Parse parses an IP address and cidr/netmask into a network address and a cidr.
 func Parse(ip, network string) (net.IP, uint, error) {
 
 	cidrStr, err := toCidr(network)
