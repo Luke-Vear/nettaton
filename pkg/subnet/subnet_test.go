@@ -1,271 +1,496 @@
 package subnet
 
-/*
 import (
+	"net"
+	"reflect"
 	"testing"
 )
 
-var jrm = []byte(`{
-		"answer": "10.126.72.254",
-		"ipAddress": "10.126.72.171",
-		"network": "255.255.255.0",
-		"questionKind": "last"
-	}`)
+func TestParse(t *testing.T) {
 
-// type ClientRequest struct {
-// 	Answer       string `json:"answer"`
-// 	IPAddress    string `json:"ipAddress"`
-// 	Network      string `json:"network"`
-// 	QuestionKind string `json:"questionKind"`
-// }
-
-func TestParseAnswer(t *testing.T) {
-	testTable := []struct {
-		cr        *ClientRequest
-		expected  string
-		errExpect error
+	tt := []struct {
+		inputIP    string
+		inputNet   string
+		netExpect  net.IP
+		cidrExpect uint
+		errExpect  error
 	}{
 		{
-			cr: &ClientRequest{
-				Answer:       "10.72.243.105",
-				IPAddress:    "10.72.243.104",
-				Network:      "30",
-				QuestionKind: "first",
-			},
-			expected:  "10.72.243.105",
-			errExpect: nil,
+			inputIP:    "",
+			inputNet:   "31",
+			netExpect:  nil,
+			cidrExpect: 0,
+			errExpect:  ErrInvalidNetwork,
 		},
 		{
-			cr: &ClientRequest{
-				Answer:       "10.217.75.1",
-				IPAddress:    "10.217.75.42",
-				Network:      "24",
-				QuestionKind: "first",
-			},
-			expected:  "10.217.75.1",
-			errExpect: nil,
+			inputIP:    "",
+			inputNet:   "255.255.255.254",
+			netExpect:  nil,
+			cidrExpect: 0,
+			errExpect:  ErrInvalidNetwork,
 		},
 		{
-			cr: &ClientRequest{
-				Answer:       "10.90.148.1",
-				IPAddress:    "10.90.149.74",
-				Network:      "22",
-				QuestionKind: "first",
-			},
-			expected:  "10.90.148.1",
-			errExpect: nil,
+			inputIP:    "10.72.243.106",
+			inputNet:   "30",
+			netExpect:  net.IP{10, 72, 243, 104},
+			cidrExpect: 30,
+			errExpect:  nil,
 		},
 		{
-			cr: &ClientRequest{
-				Answer:       "10.170.0.1",
-				IPAddress:    "10.170.101.236",
-				Network:      "16",
-				QuestionKind: "first",
-			},
-			expected:  "10.170.0.1",
-			errExpect: nil,
+			inputIP:    "10.16.9.99",
+			inputNet:   "255.240.0.0",
+			netExpect:  net.IP{10, 16, 0, 0},
+			cidrExpect: 12,
+			errExpect:  nil,
 		},
 		{
-			cr: &ClientRequest{
-				Answer:       "10.16.0.1",
-				IPAddress:    "10.28.244.157",
-				Network:      "12",
-				QuestionKind: "first",
-			},
-			expected:  "10.16.0.1",
-			errExpect: nil,
+			inputIP:    "",
+			inputNet:   "11",
+			netExpect:  nil,
+			cidrExpect: 0,
+			errExpect:  ErrInvalidNetwork,
 		},
 		{
-			cr: &ClientRequest{
-				Answer:       "10.218.18.97",
-				IPAddress:    "10.218.18.110",
-				Network:      "255.255.255.224",
-				QuestionKind: "first",
-			},
-			expected:  "10.218.18.97",
-			errExpect: nil,
+			inputIP:    "",
+			inputNet:   "255.224.0.0",
+			netExpect:  nil,
+			cidrExpect: 0,
+			errExpect:  ErrInvalidNetwork,
 		},
 		{
-			cr: &ClientRequest{
-				Answer:       "10.200.103.1",
-				IPAddress:    "10.200.103.119",
-				Network:      "255.255.255.0",
-				QuestionKind: "first",
-			},
-			expected:  "10.200.103.1",
-			errExpect: nil,
-		},
-		{
-			cr: &ClientRequest{
-				Answer:       "10.4.192.1",
-				IPAddress:    "10.4.198.63",
-				Network:      "255.255.192.0",
-				QuestionKind: "first",
-			},
-			expected:  "10.4.192.1",
-			errExpect: nil,
-		},
-		{
-			cr: &ClientRequest{
-				Answer:       "10.33.0.1",
-				IPAddress:    "10.33.60.245",
-				Network:      "255.255.0.0",
-				QuestionKind: "first",
-			},
-			expected:  "10.33.0.1",
-			errExpect: nil,
-		},
-		{
-			cr: &ClientRequest{
-				Answer:       "10.248.0.1",
-				IPAddress:    "10.250.253.191",
-				Network:      "255.248.0.0",
-				QuestionKind: "first",
-			},
-			expected:  "10.248.0.1",
-			errExpect: nil,
-		},
-		{
-			cr: &ClientRequest{
-				Answer:       "10.72.243.106",
-				IPAddress:    "10.72.243.104",
-				Network:      "30",
-				QuestionKind: "last",
-			},
-			expected:  "10.72.243.106",
-			errExpect: nil,
-		},
-		{
-			cr: &ClientRequest{
-				Answer:       "10.217.75.254",
-				IPAddress:    "10.217.75.42",
-				Network:      "24",
-				QuestionKind: "last",
-			},
-			expected:  "10.217.75.254",
-			errExpect: nil,
-		},
-		{
-			cr: &ClientRequest{
-				Answer:       "10.90.151.254",
-				IPAddress:    "10.90.149.74",
-				Network:      "22",
-				QuestionKind: "last",
-			},
-			expected:  "10.90.151.254",
-			errExpect: nil,
-		},
-		{
-			cr: &ClientRequest{
-				Answer:       "10.170.255.254",
-				IPAddress:    "10.170.101.236",
-				Network:      "16",
-				QuestionKind: "last",
-			},
-			expected:  "10.170.255.254",
-			errExpect: nil,
-		},
-		{
-			cr: &ClientRequest{
-				Answer:       "10.31.255.254",
-				IPAddress:    "10.28.244.157",
-				Network:      "12",
-				QuestionKind: "last",
-			},
-			expected:  "10.31.255.254",
-			errExpect: nil,
+			inputIP:    "thisWillError",
+			inputNet:   "255.240.0.0",
+			netExpect:  nil,
+			cidrExpect: 0,
+			errExpect:  error(&net.ParseError{Type: "CIDR address", Text: "thisWillError/12"}),
 		},
 	}
-	for _, tt := range testTable {
-		actual, errActual := parseAnswer(tt.cr)
-		if errActual != tt.errExpect || actual != tt.expected {
-			t.Errorf("actual: %v\nexpected: %v\ncr: %v\nerrExpected: %v\nerrActual: %v\n",
-				actual, tt.expected, tt.cr, tt.errExpect, errActual)
+
+	for _, tc := range tt {
+		netActual, cidrActual, errActual := Parse(tc.inputIP, tc.inputNet)
+		if !reflect.DeepEqual(netActual, tc.netExpect) || cidrActual != tc.cidrExpect || !reflect.DeepEqual(errActual, tc.errExpect) {
+			t.Errorf("\nnetActual: %v\nnetExpect: %v\ncidrActual: %v\ncidrExpect: %v\nerrActual: %v\nerrExpect: %v\n",
+				netActual, tc.netExpect, cidrActual, tc.cidrExpect, errActual, tc.errExpect)
 		}
 	}
 }
 
-// {
-// 	name: "last-netmask-255.255.255.224",
-// 	args: args{ip: "10.218.18.110", net: "255.255.255.224"},
-// 	want: "10.218.18.97",
-// },
-// {
-// 	name: "last-netmask-255.255.255.0",
-// 	args: args{ip: "10.200.103.119", net: "255.255.255.0"},
-// 	want: "10.200.103.254",
-// },
-// {
-// 	name: "last-netmask-255.255.192.0",
-// 	args: args{ip: "10.4.198.63", net: "255.255.192.0"},
-// 	want: "10.4.255.254",
-// },
-// {
-// 	name: "last-netmask-255.255.0.0",
-// 	args: args{ip: "10.33.60.245", net: "255.255.0.0"},
-// 	want: "10.33.255.254",
-// },
-// {
-// 	name: "last-netmask-255.248.0.0",
-// 	args: args{ip: "10.250.253.191", net: "255.248.0.0"},
-// 	want: "10.255.255.254",
-// },
+func TestToCidr(t *testing.T) {
+
+	tt := []struct {
+		input     string
+		errExpect error
+		strExpect string
+	}{
+		{
+			input:     "31",
+			errExpect: ErrInvalidNetwork,
+			strExpect: "",
+		},
+		{
+			input:     "255.255.255.254",
+			errExpect: ErrInvalidNetwork,
+			strExpect: "",
+		},
+		{
+			input:     "30",
+			errExpect: nil,
+			strExpect: "30",
+		},
+		{
+			input:     "255.255.255.252",
+			errExpect: nil,
+			strExpect: "30",
+		},
+		{
+			input:     "12",
+			errExpect: nil,
+			strExpect: "12",
+		},
+		{
+			input:     "255.240.0.0",
+			errExpect: nil,
+			strExpect: "12",
+		},
+		{
+			input:     "11",
+			errExpect: ErrInvalidNetwork,
+			strExpect: "",
+		},
+		{
+			input:     "255.224.0.0",
+			errExpect: ErrInvalidNetwork,
+			strExpect: "",
+		},
+	}
+
+	for _, tc := range tt {
+		if actualStr, actualErr := toCidr(tc.input); actualStr != tc.strExpect || actualErr != tc.errExpect {
+			t.Errorf("\ntc: %v\nactualStr: %v, actualErr: %v\n", tc, actualStr, actualErr)
+		}
+	}
+}
+
+func TestFirst(t *testing.T) {
+
+	tt := []struct {
+		inputNetIP net.IP
+		inputCidr  uint
+		expect     string
+	}{
+		{
+			inputNetIP: net.IP{10, 72, 243, 104},
+			inputCidr:  30,
+			expect:     "10.72.243.105",
+		},
+		{
+			inputNetIP: net.IP{10, 28, 244, 152},
+			inputCidr:  29,
+			expect:     "10.28.244.153",
+		},
+		{
+			inputNetIP: net.IP{10, 217, 75, 0},
+			inputCidr:  24,
+			expect:     "10.217.75.1",
+		},
+		{
+			inputNetIP: net.IP{10, 16, 0, 0},
+			inputCidr:  12,
+			expect:     "10.16.0.1",
+		},
+	}
+
+	for _, tc := range tt {
+		if actual := First(tc.inputNetIP, tc.inputCidr); actual != tc.expect {
+			t.Errorf("\nactual: %v\nexpected: %v\nip: %v, cidr: %v", actual, tc.expect, tc.inputNetIP, tc.inputCidr)
+		}
+	}
+}
+
+func TestLast(t *testing.T) {
+
+	tt := []struct {
+		inputNetIP net.IP
+		inputCidr  uint
+		expect     string
+	}{
+		{
+			inputNetIP: net.IP{10, 72, 243, 104},
+			inputCidr:  30,
+			expect:     "10.72.243.106",
+		},
+		{
+			inputNetIP: net.IP{10, 28, 244, 152},
+			inputCidr:  29,
+			expect:     "10.28.244.158",
+		},
+		{
+			inputNetIP: net.IP{10, 217, 75, 0},
+			inputCidr:  24,
+			expect:     "10.217.75.254",
+		},
+		{
+			inputNetIP: net.IP{10, 16, 0, 0},
+			inputCidr:  12,
+			expect:     "10.31.255.254",
+		},
+	}
+
+	for _, tc := range tt {
+		if actual := Last(tc.inputNetIP, tc.inputCidr); actual != tc.expect {
+			t.Errorf("\nactual: %v\nexpected: %v\nip: %v, cidr: %v", actual, tc.expect, tc.inputNetIP, tc.inputCidr)
+		}
+	}
+}
 
 func TestBroadcast(t *testing.T) {
-	// {
-	// 	name: "broadcast-prefix-30",
-	// 	args: args{ip: "10.72.243.104", net: "30"},
-	// 	want: "10.72.243.107",
-	// },
-	// {
-	// 	name: "broadcast-prefix-24",
-	// 	args: args{ip: "10.217.75.42", net: "24"},
-	// 	want: "10.217.75.255",
-	// },
-	// {
-	// 	name: "broadcast-prefix-22",
-	// 	args: args{ip: "10.90.149.74", net: "22"},
-	// 	want: "10.90.151.255",
-	// },
-	// {
-	// 	name: "broadcast-prefix-16",
-	// 	args: args{ip: "10.170.101.236", net: "16"},
-	// 	want: "10.170.255.255",
-	// },
-	// {
-	// 	name: "broadcast-prefix-12",
-	// 	args: args{ip: "10.28.244.157", net: "12"},
-	// 	want: "10.31.255.255",
-	// },
-	// {
-	// 	name: "broadcast-netmask-255.255.255.224",
-	// 	args: args{ip: "10.218.18.110", net: "255.255.255.224"},
-	// 	want: "10.218.18.98",
-	// },
-	// {
-	// 	name: "broadcast-netmask-255.255.255.0",
-	// 	args: args{ip: "10.200.103.119", net: "255.255.255.0"},
-	// 	want: "10.200.103.255",
-	// },
-	// {
-	// 	name: "broadcast-netmask-255.255.192.0",
-	// 	args: args{ip: "10.4.198.63", net: "255.255.192.0"},
-	// 	want: "10.4.255.255",
-	// },
-	// {
-	// 	name: "broadcast-netmask-255.255.0.0",
-	// 	args: args{ip: "10.33.60.245", net: "255.255.0.0"},
-	// 	want: "10.33.255.255",
-	// },
-	// {
-	// 	name: "broadcast-netmask-255.248.0.0",
-	// 	args: args{ip: "10.250.253.191", net: "255.248.0.0"},
-	// 	want: "10.255.255.255",
-	// },
+
+	tt := []struct {
+		inputNetIP net.IP
+		inputCidr  uint
+		expect     string
+	}{
+		{
+			inputNetIP: net.IP{10, 72, 243, 104},
+			inputCidr:  30,
+			expect:     "10.72.243.107",
+		},
+		{
+			inputNetIP: net.IP{10, 28, 244, 152},
+			inputCidr:  29,
+			expect:     "10.28.244.159",
+		},
+		{
+			inputNetIP: net.IP{10, 217, 75, 0},
+			inputCidr:  24,
+			expect:     "10.217.75.255",
+		},
+		{
+			inputNetIP: net.IP{10, 16, 0, 0},
+			inputCidr:  12,
+			expect:     "10.31.255.255",
+		},
+	}
+
+	for _, tc := range tt {
+		if actual := Broadcast(tc.inputNetIP, tc.inputCidr); actual != tc.expect {
+			t.Errorf("\nactual: %v\nexpected: %v\nip: %v, cidr: %v", actual, tc.expect, tc.inputNetIP, tc.inputCidr)
+		}
+	}
+}
+
+func TestFirstAndLast(t *testing.T) {
+
+	tt := []struct {
+		inputNetIP net.IP
+		inputCidr  uint
+		expect     string
+	}{
+		{
+			inputNetIP: net.IP{10, 72, 243, 104},
+			inputCidr:  30,
+			expect:     "10.72.243.105-10.72.243.106",
+		},
+		{
+			inputNetIP: net.IP{10, 28, 244, 152},
+			inputCidr:  29,
+			expect:     "10.28.244.153-10.28.244.158",
+		},
+		{
+			inputNetIP: net.IP{10, 217, 75, 0},
+			inputCidr:  24,
+			expect:     "10.217.75.1-10.217.75.254",
+		},
+		{
+			inputNetIP: net.IP{10, 16, 0, 0},
+			inputCidr:  12,
+			expect:     "10.16.0.1-10.31.255.254",
+		},
+	}
+
+	for _, tc := range tt {
+		if actual := FirstAndLast(tc.inputNetIP, tc.inputCidr); actual != tc.expect {
+			t.Errorf("\nactual: %v\nexpected: %v\nip: %v, cidr: %v", actual, tc.expect, tc.inputNetIP, tc.inputCidr)
+		}
+	}
+}
+
+func TestHostsInNet(t *testing.T) {
+
+	tt := []struct {
+		inputNetIP net.IP
+		inputCidr  uint
+		expect     string
+	}{
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  12,
+			expect:     "1048574",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  13,
+			expect:     "524286",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  14,
+			expect:     "262142",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  15,
+			expect:     "131070",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  16,
+			expect:     "65534",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  17,
+			expect:     "32766",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  18,
+			expect:     "16382",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  19,
+			expect:     "8190",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  20,
+			expect:     "4094",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  21,
+			expect:     "2046",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  22,
+			expect:     "1022",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  23,
+			expect:     "510",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  24,
+			expect:     "254",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  25,
+			expect:     "126",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  26,
+			expect:     "62",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  27,
+			expect:     "30",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  28,
+			expect:     "14",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  29,
+			expect:     "6",
+		},
+		{
+			inputNetIP: net.IP{10, 10, 10, 10},
+			inputCidr:  30,
+			expect:     "2",
+		},
+	}
+
+	for _, tc := range tt {
+		if actual := HostsInNet(tc.inputNetIP, tc.inputCidr); actual != tc.expect {
+			t.Errorf("\nactual: %v\nexpected: %v\nip: %v, cidr: %v", actual, tc.expect, tc.inputNetIP, tc.inputCidr)
+		}
+	}
 
 }
 
-func TestRange(t *testing.T) {
+func TestCpnip(t *testing.T) {
 
+	ipToBeCopied, ipToBeCompared := net.IP{10, 10, 10, 10}, net.IP{10, 10, 10, 10}
+
+	// Copy IP and mutate original.
+	copiedIP := cpnip(ipToBeCopied)
+	ipToBeCopied[len(ipToBeCopied)-1]++
+
+	if copiedIP.Equal(ipToBeCopied) {
+		t.Error("IP mutated, not copied")
+	}
+
+	if !copiedIP.Equal(ipToBeCompared) {
+		t.Error("IP not copied correctly")
+	}
 }
-*/
+
+func TestHosts(t *testing.T) {
+
+	tt := []struct {
+		input  uint
+		expect int
+	}{
+		{
+			input:  12,
+			expect: 1048574,
+		},
+		{
+			input:  13,
+			expect: 524286,
+		},
+		{
+			input:  14,
+			expect: 262142,
+		},
+		{
+			input:  15,
+			expect: 131070,
+		},
+		{
+			input:  16,
+			expect: 65534,
+		},
+		{
+			input:  17,
+			expect: 32766,
+		},
+		{
+			input:  18,
+			expect: 16382,
+		},
+		{
+			input:  19,
+			expect: 8190,
+		},
+		{
+			input:  20,
+			expect: 4094,
+		},
+		{
+			input:  21,
+			expect: 2046,
+		},
+		{
+			input:  22,
+			expect: 1022,
+		},
+		{
+			input:  23,
+			expect: 510,
+		},
+		{
+			input:  24,
+			expect: 254,
+		},
+		{
+			input:  25,
+			expect: 126,
+		},
+		{
+			input:  26,
+			expect: 62,
+		},
+		{
+			input:  27,
+			expect: 30,
+		},
+		{
+			input:  28,
+			expect: 14,
+		},
+		{
+			input:  29,
+			expect: 6,
+		},
+		{
+			input:  30,
+			expect: 2,
+		},
+	}
+
+	for _, tc := range tt {
+		if actual := hosts(tc.input); actual != tc.expect {
+			t.Errorf("\nactual: %v\nexpected: %v\ncidr: %v", actual, tc.expect, tc.input)
+		}
+	}
+}

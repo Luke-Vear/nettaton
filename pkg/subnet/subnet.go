@@ -1,13 +1,15 @@
 package subnet
 
 import (
-	"fmt"
+	"errors"
 	"net"
 	"regexp"
 	"strconv"
 )
 
 var (
+	ErrInvalidNetwork = errors.New("unable to parse network")
+
 	// QuestionFuncMap maps a string name of a function to an actual function.
 	QuestionFuncMap = map[string]func(net.IP, uint) string{
 		"first":        First,
@@ -21,21 +23,20 @@ var (
 // Parse parses an IP address and cidr/netmask into a network address and a cidr.
 func Parse(ip, network string) (net.IP, uint, error) {
 
+	// Convert network string to subnet prefix length int.
 	cidrStr, err := toCidr(network)
 	if err != nil {
 		return nil, 0, err
 	}
+	cidrInt, _ := strconv.Atoi(cidrStr)
 
-	cidrInt, err := strconv.Atoi(cidrStr)
-	if err != nil {
-		return nil, 0, err
-	}
-
+	// Convert the strings ip and network into the network ID as type net.IP.
 	_, nw, err := net.ParseCIDR(ip + "/" + cidrStr)
 	if err != nil {
 		return nil, 0, err
 	}
 
+	// return IPv4 IP and cidr as uint
 	return nw.IP.To4(), uint(cidrInt), nil
 }
 
@@ -49,7 +50,7 @@ func toCidr(n string) (string, error) {
 			return v.prefix, nil
 		}
 	}
-	return "", fmt.Errorf("Unable to parse network %v", n)
+	return "", ErrInvalidNetwork
 }
 
 // First returns the first valid IP address in the range.
@@ -78,8 +79,8 @@ func Last(nip net.IP, cidr uint) string {
 // Broadcast returns the broadcast address.
 func Broadcast(nip net.IP, cidr uint) string {
 
-	bc := net.ParseIP(Last(nip, cidr) + "/" + string(cidr))
-	bc[3]++
+	bc, _, _ := net.ParseCIDR(Last(nip, cidr) + "/" + strconv.Itoa(int(cidr)))
+	bc[len(bc)-1]++
 
 	return bc.String()
 }

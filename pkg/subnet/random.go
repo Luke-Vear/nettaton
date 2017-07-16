@@ -55,10 +55,10 @@ func RandomNetwork() string {
 // RandomQuestionKind returns a kind of subnetting question.
 func RandomQuestionKind() string {
 
-	var questionKinds []string
+	var qk []string
 	for key := range QuestionFuncMap {
-		questionKinds = append(questionKinds, key)
+		qk = append(qk, key)
 	}
 
-	return questionKinds[r(len(QuestionFuncMap))]
+	return qk[r(len(QuestionFuncMap))]
 }
