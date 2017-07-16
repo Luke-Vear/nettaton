@@ -1,7 +1,6 @@
 package platform
 
 import (
-	"errors"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,16 +10,8 @@ import (
 )
 
 var (
-	ErrUserNotFoundInDatabase    = errors.New("user not found in database")
-	ErrUserNotSpecified          = errors.New("user not specified")
-	ErrRequiredFieldNotInRequest = errors.New("required request field empty")
-
 	// Same db session for all database queries.
-	db = dynamodb.New(
-		session.Must(
-			session.NewSession(&aws.Config{
-				Region: aws.String(os.Getenv("REGION")),
-			})))
+	db = dynamodb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String(os.Getenv("REGION"))})))
 
 	// Same table for all database queries.
 	table = os.Getenv("TABLE")

@@ -13,8 +13,6 @@ import (
 // Handle is the entrypoint for the shim.
 func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
-	headers := map[string]string{"Content-Type": "application/json"}
-
 	// Need to seed for random question generation below.
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -28,12 +26,7 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		Network:      subnet.RandomNetwork(),
 		QuestionKind: subnet.RandomQuestionKind(),
 	})
-
-	return platform.Response{
-		StatusCode: "200",
-		Headers:    headers,
-		Body:       string(body),
-	}, nil
+	return platform.NewResponse("200", string(body), nil)
 }
 
 // Handle is the entrypoint for the shim.
