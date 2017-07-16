@@ -11,7 +11,6 @@ import (
 
 // Request is what the client will be sending.
 type Request struct {
-	UserID   string `json:"userID"`
 	Password string `json:"password"`
 }
 
@@ -23,13 +22,21 @@ func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, e
 		return platform.NewResponse("400", "", err)
 	}
 
-	// Define PK for query.
+	// Check required fields.
+	if cr.Password == "" {
+		return platform.NewResponse("400", "", platform.ErrRequiredFieldNotInRequest)
+	}
+
+	// Extract user from path parameters and define PK for query.
+	if userID, ok := evt.PathParameters["userID"]; !ok || userID == "" {
+		return platform.NewResponse("400", "", platform.ErrUserNotSpecified)
+	}
 	user := platform.NewUser()
-	user.UserID = cr.UserID
+	user.UserID = evt.PathParameters["userID"]
 
 	// Get User from db.
 	if err := platform.GetUser(user); err != nil {
-		return platform.NewResponse("500", "", err)
+		return platform.NewResponse("404", "", err)
 	}
 
 	// Check password from client against hash in database, get a JWT.

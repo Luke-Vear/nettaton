@@ -1,9 +1,8 @@
 package auth
 
 import (
-	"errors"
-	"fmt"
 	"os"
+	"time"
 
 	"github.com/Luke-Vear/nettaton/pkg/platform"
 	"github.com/dgrijalva/jwt-go"
@@ -11,43 +10,51 @@ import (
 )
 
 var (
-	ErrPasswordEmpty = errors.New("request password field empty")
-
 	secret = os.Getenv("SECRET")
 )
 
-// UserID checks the token and returns userID.
-// TODO
-func UserID(bearer string) (string, error) {
-
-	if bearer == "" {
-		return "", nil
-	}
-
-	token, err := jwt.Parse(bearer, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-		return secret, nil
-	})
-	if err != nil {
-		return "", err
-	}
-
-	_ = token
-	return "USERNAME", nil
-}
-
 // Login takes a User from the database and a password and returns a JWT.
-// TODO
 func Login(u *platform.User, pw string) (string, error) {
-
-	if pw == "" {
-		return "", ErrPasswordEmpty
-	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pw)); err != nil {
 		return "", err
 	}
-	return "JWT", nil
+
+	// Create a new token object, specifying signing method and claims.
+	// Standard claims: https://tools.ietf.org/html/rfc7519#section-4.1
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		Subject:   u.UserID,
+		ExpiresAt: time.Now().Add(time.Hour * 150).Unix(),
+		NotBefore: time.Now().Unix(),
+	})
+
+	// Sign and get the complete encoded token as a string using the secret
+	tokenString, err := token.SignedString([]byte(secret))
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
+
+// UserID checks the token and returns userID.
+// TODO
+// func UserID(bearer string) (string, error) {
+
+// 	if bearer == "" {
+// 		return "", nil
+// 	}
+
+// 	token, err := jwt.Parse(bearer, func(token *jwt.Token) (interface{}, error) {
+// 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+// 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+// 		}
+// 		return secret, nil
+// 	})
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	_ = token
+// 	return "USERNAME", nil
+// }

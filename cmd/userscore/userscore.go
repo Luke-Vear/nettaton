@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 
 	"github.com/Luke-Vear/nettaton/pkg/platform"
 	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
@@ -12,12 +11,10 @@ import (
 // Handle is invoked by the shim.
 func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, error) {
 
-	// Extract user from headers.
-	if _, ok := evt.PathParameters["userID"]; !ok {
-		return platform.NewResponse("400", "", errors.New("no userID path parameter"))
+	// Extract user from path parameters and define PK for query.
+	if userID, ok := evt.PathParameters["userID"]; !ok || userID == "" {
+		return platform.NewResponse("400", "", platform.ErrUserNotSpecified)
 	}
-
-	// Define PK for query.
 	user := platform.NewUser()
 	user.UserID = evt.PathParameters["userID"]
 

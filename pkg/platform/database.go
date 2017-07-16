@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	ErrUserNotFoundInDatabase = errors.New("user not found in database")
-	ErrUserNotSpecified       = errors.New("user not specified")
+	ErrUserNotFoundInDatabase    = errors.New("user not found in database")
+	ErrUserNotSpecified          = errors.New("user not specified")
+	ErrRequiredFieldNotInRequest = errors.New("required request field empty")
 
 	// Same db session for all database queries.
 	db = dynamodb.New(
