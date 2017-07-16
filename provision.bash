@@ -2,10 +2,7 @@
 
 PROJECT="nettaton"
 ENVIRONMENT="${1}"
-FUNC_LIST=(question answer score)
-
-#TODO
-#FUNC_LIST=(question answer score login register)
+FUNC_LIST=(answer login question userscore register)
 
 
 if [[ -z $ENVIRONMENT ]]; then
@@ -14,7 +11,7 @@ if [[ -z $ENVIRONMENT ]]; then
 fi
 
 #### DynamoDB ################################################################
-TABLE_NAME="${PROJECT}-${ENVIRONMENT}-scoredb"
+TABLE_NAME="${PROJECT}-${ENVIRONMENT}-userdb"
 
 echo "Checking for ${TABLE_NAME}"
 DYNAMO_ARN=$(aws dynamodb describe-table \
@@ -36,10 +33,6 @@ fi
 aws dynamodb wait table-exists \
   --table-name ${TABLE_NAME}
 
-aws dynamodb tag-resource \
-  --resource-arn ${DYNAMO_ARN} \
-  --tags Key=project,Value=${PROJECT} Key=env,Value=${ENVIRONMENT}
-
 #### IAM #####################################################################
 echo "Checking for ${ENVIRONMENT} lambda role"
 
@@ -58,7 +51,7 @@ EOF
 
   # create-policy
   POLICY_ARN=$(aws iam create-policy \
-    --policy-name ${PROJECT}-${ENVIRONMENT}-scoredb-rw \
+    --policy-name "${TABLE_NAME}" \
     --policy-document "${POL_DOC}" \
     --query 'Policy.Arn' \
     --output text)
@@ -105,10 +98,6 @@ for component in ${FUNC_LIST[@]}; do
     --query 'FunctionArn' \
     --output text 2>/dev/null)
   
-  aws lambda tag-resource \
-    --resource ${LAMBDA_FUNC_ARN} \
-    --tags project=${PROJECT},env=${ENVIRONMENT}
-
   rm -vf handler.{so,zip}
   cd -
 done

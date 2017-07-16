@@ -18,7 +18,7 @@ LAMBDA_ROLE_ARN=$(aws iam get-role \
   --query 'Role.Arn' \
   --output text)
 
-echo "Building"
+echo "Building ${COMPONENT}"
 make || exit 1
 
 echo "Updating Lambda function"

@@ -17,6 +17,7 @@ var (
 )
 
 // UserID checks the token and returns userID.
+// TODO
 func UserID(bearer string) (string, error) {
 
 	if bearer == "" {
@@ -33,12 +34,12 @@ func UserID(bearer string) (string, error) {
 		return "", err
 	}
 
-	// TODO
 	_ = token
 	return "USERNAME", nil
 }
 
 // Login takes a User from the database and a password and returns a JWT.
+// TODO
 func Login(u *platform.User, pw string) (string, error) {
 
 	if pw == "" {

@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/Luke-Vear/nettaton/pkg/auth"
 	"github.com/Luke-Vear/nettaton/pkg/platform"
 	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
+	"github.com/eawsy/aws-lambda-go-event/service/lambda/runtime/event/apigatewayproxyevt"
 )
 
 // Request is what the client will be sending.
@@ -15,20 +15,12 @@ type Request struct {
 	Password string `json:"password"`
 }
 
-// Login User
-
 // Handle is the entrypoint for the shim.
-func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
+func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, error) {
 
-	headers := map[string]string{"Content-Type": "application/json"}
-
-	var cr *Request
-	if err := json.Unmarshal(evt, cr); err != nil {
-		return platform.Response{
-			StatusCode: "400",
-			Headers:    headers,
-			Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
-		}, err
+	var cr Request
+	if err := json.Unmarshal([]byte(evt.Body), &cr); err != nil {
+		return platform.NewResponse("400", "", err)
 	}
 
 	// Define PK for query.
@@ -37,21 +29,13 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	// Get User from db.
 	if err := platform.GetUser(user); err != nil {
-		return platform.Response{
-			StatusCode: "500",
-			Headers:    headers,
-			Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
-		}, err
+		return platform.NewResponse("500", "", err)
 	}
 
 	// Check password from client against hash in database, get a JWT.
 	jwt, err := auth.Login(user, cr.Password)
 	if err != nil {
-		return platform.Response{
-			StatusCode: "401",
-			Headers:    headers,
-			Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
-		}, err
+		return platform.NewResponse("401", "", err)
 	}
 
 	// Return token to client.
@@ -62,12 +46,7 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		AccessToken: jwt,
 		TokenType:   "Bearer",
 	})
-
-	return platform.Response{
-		StatusCode: "200",
-		Headers:    headers,
-		Body:       string(body),
-	}, nil
+	return platform.NewResponse("200", string(body), nil)
 }
 
 // Handle is the entrypoint for the shim.

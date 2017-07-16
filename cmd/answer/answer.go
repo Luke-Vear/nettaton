@@ -2,12 +2,13 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/Luke-Vear/nettaton/pkg/auth"
 	"github.com/Luke-Vear/nettaton/pkg/platform"
 	"github.com/Luke-Vear/nettaton/pkg/subnet"
 	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
+	"github.com/eawsy/aws-lambda-go-event/service/lambda/runtime/event/apigatewayproxyevt"
 )
 
 // Request is what the client will be sending.
@@ -19,49 +20,31 @@ type Request struct {
 }
 
 // Handle is the entrypoint for the shim.
-func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
+func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, error) {
 
-	headers := map[string]string{"Content-Type": "application/json"}
-
-	var cr *Request
-	if err := json.Unmarshal(evt, cr); err != nil {
-		return platform.Response{
-			StatusCode: "400",
-			Headers:    headers,
-			Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
-		}, err
+	var cr Request
+	if err := json.Unmarshal([]byte(evt.Body), &cr); err != nil {
+		return platform.NewResponse("400", "", err)
 	}
 
 	// Attempt to parse ip address and subnet.
 	nip, cidr, err := subnet.Parse(cr.IPAddress, cr.Network)
 	if err != nil {
-		return platform.Response{
-			StatusCode: "400",
-			Headers:    headers,
-			Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
-		}, err
+		return platform.NewResponse("400", "", err)
 	}
 
 	// Test if question type is valid, then resolve answer.
 	if _, ok := subnet.QuestionFuncMap[cr.QuestionKind]; !ok {
-		return platform.Response{
-			StatusCode: "400",
-			Headers:    headers,
-			Body:       fmt.Sprintf("{\"Error\": \"Invalid questionKind %v\"}", cr.QuestionKind),
-		}, err
+		return platform.NewResponse("400", "", errors.New("invalid questionkind"))
 	}
 	actualAnswer := subnet.QuestionFuncMap[cr.QuestionKind](nip, cidr)
 
 	// Extract jwt from headers (if exists), parse user claim.
-	if jwtString := platform.JWTFromEvt(evt); jwtString != "" {
+	if jwtString, ok := evt.Headers["authorization"]; ok {
 
 		userID, err := auth.UserID(jwtString)
 		if err != nil {
-			return platform.Response{
-				StatusCode: "401",
-				Headers:    headers,
-				Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
-			}, err
+			return platform.NewResponse("401", "", err)
 		}
 
 		// Define PK for query.
@@ -70,11 +53,7 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 		// Get User from db.
 		if err := platform.GetUser(user); err != nil {
-			return platform.Response{
-				StatusCode: "500",
-				Headers:    headers,
-				Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
-			}, err
+			return platform.NewResponse("500", "", err)
 		}
 
 		// Increment scores.
@@ -85,11 +64,7 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 		// Put modified User back into db.
 		if err := platform.PutUser(user); err != nil {
-			return platform.Response{
-				StatusCode: "500",
-				Headers:    headers,
-				Body:       fmt.Sprintf("{\"Error\": \"%v\"}", err),
-			}, err
+			return platform.NewResponse("500", "", err)
 		}
 	}
 
@@ -101,12 +76,7 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		UserAnswer:   cr.Answer,
 		ActualAnswer: actualAnswer,
 	})
-
-	return platform.Response{
-		StatusCode: "200",
-		Headers:    headers,
-		Body:       string(body),
-	}, nil
+	return platform.NewResponse("200", string(body), nil)
 }
 
 // Handle is the entrypoint for the shim.

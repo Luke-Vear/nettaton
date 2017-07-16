@@ -36,7 +36,6 @@ func GetUser(u *User) error {
 	// Build query from environment and User passed in to function.
 	query := &dynamodb.GetItemInput{
 
-		// Table to query from environment.
 		TableName: aws.String(table),
 
 		// Primary key is userID passed in from User.

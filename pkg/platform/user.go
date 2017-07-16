@@ -9,6 +9,7 @@ type User struct {
 	UserID   string                    `json:"userID"`
 	Password string                    `json:"password"`
 	Email    string                    `json:"email"`
+	Status   string                    `json:"status"`
 	Scores   map[string]*QuestionScore `json:"scores"`
 }
 
@@ -25,16 +26,8 @@ func NewUser() *User {
 
 	// Loop over all question types and initalize zero values.
 	for k := range subnet.QuestionFuncMap {
-		scores[k] = &QuestionScore{
-			Attempts: 0,
-			Correct:  0,
-		}
+		scores[k] = &QuestionScore{}
 	}
 
-	return &User{
-		UserID:   "",
-		Password: "",
-		Email:    "",
-		Scores:   scores,
-	}
+	return &User{Scores: scores}
 }
