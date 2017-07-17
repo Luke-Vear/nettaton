@@ -1,4 +1,4 @@
-package platform
+package do
 
 import (
 	"github.com/Luke-Vear/nettaton/pkg/subnet"

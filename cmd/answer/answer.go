@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/Luke-Vear/nettaton/pkg/auth"
+	"github.com/Luke-Vear/nettaton/pkg/do"
 	"github.com/Luke-Vear/nettaton/pkg/platform"
 	"github.com/Luke-Vear/nettaton/pkg/subnet"
 	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
@@ -44,7 +45,7 @@ func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, e
 	actualAnswer := subnet.QuestionFuncMap[cr.QuestionKind](nip, cidr)
 
 	// Extract jwt from headers (if exists), parse user claim.
-	user := platform.NewUser()
+	user := do.NewUser()
 	if jwtString, ok := evt.Headers["Authorization"]; ok && jwtString != "" {
 
 		userID, err := auth.UserID(jwtString)
@@ -74,9 +75,9 @@ func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, e
 
 	// Send actualAnswer back to client.
 	body, _ := json.Marshal(struct {
-		UserAnswer   string                             `json:"userAnswer"`
-		ActualAnswer string                             `json:"actualAnswer"`
-		Scores       map[string]*platform.QuestionScore `json:"scores"`
+		UserAnswer   string                       `json:"userAnswer"`
+		ActualAnswer string                       `json:"actualAnswer"`
+		Scores       map[string]*do.QuestionScore `json:"scores"`
 	}{
 		UserAnswer:   cr.Answer,
 		ActualAnswer: actualAnswer,

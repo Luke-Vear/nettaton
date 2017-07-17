@@ -3,6 +3,8 @@ package platform
 import (
 	"os"
 
+	"github.com/Luke-Vear/nettaton/pkg/auth"
+	"github.com/Luke-Vear/nettaton/pkg/do"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -18,12 +20,12 @@ var (
 )
 
 // GetUser deserializes the user data into the *User struct.
-func GetUser(u *User) error {
+func GetUser(u *do.User) error {
 
-	// If UserID field is empty, we don't have PK required for query.
-	if u.UserID == "" {
-		return ErrUserNotSpecified
-	}
+	// // If UserID field is empty, we don't have PK required for query.
+	// if u.UserID == "" {
+	// 	return ErrUserNotSpecified
+	// }
 
 	// Build query from environment and User passed in to function.
 	query := &dynamodb.GetItemInput{
@@ -55,11 +57,20 @@ func GetUser(u *User) error {
 }
 
 // PutUser puts serializes the *User into the database.
-func PutUser(u *User) error {
+func PutUser(u *do.User) error {
 
-	// If UserID field is empty, we don't have PK required for query.
-	if u.UserID == "" {
-		return ErrUserNotSpecified
+	// // If UserID field is empty, we don't have PK required for query.
+	// if u.UserID == "" {
+	// 	return ErrUserNotSpecified
+	// }
+
+	// If new user, replace password with password hash.
+	if u.Status == "" {
+		err := auth.GenPasswordHash(u, u.Password)
+		if err != nil {
+			return err
+		}
+		u.Status = "new"
 	}
 
 	// Marshal User into attribute value map for db query.

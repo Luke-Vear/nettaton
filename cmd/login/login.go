@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/Luke-Vear/nettaton/pkg/auth"
+	"github.com/Luke-Vear/nettaton/pkg/do"
 	"github.com/Luke-Vear/nettaton/pkg/platform"
 	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
 	"github.com/eawsy/aws-lambda-go-event/service/lambda/runtime/event/apigatewayproxyevt"
@@ -31,7 +32,7 @@ func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, e
 	if userID, ok := evt.PathParameters["userID"]; !ok || userID == "" {
 		return platform.NewResponse("400", "", platform.ErrUserNotSpecified)
 	}
-	user := platform.NewUser()
+	user := do.NewUser()
 	user.UserID = evt.PathParameters["userID"]
 
 	// Get User from db.
