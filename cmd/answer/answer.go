@@ -41,7 +41,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	actualAnswer := snq.QuestionFuncMap[cr.QuestionKind](nip, cidr)
 
 	// Extract jwt from headers (if exists), parse user claim.
-	user := cpf.NewUser()
+	user := cpf.NewUser("")
 	if jwtString, ok := evt.Headers["Authorization"]; ok && jwtString != "" {
 
 		userID, err := cpf.UserID(jwtString)

@@ -14,13 +14,17 @@ var (
 	secret = os.Getenv("SECRET")
 )
 
+type Credentials struct {
+	UserID            string `json:"userID"`
+	ClearTextPassword string `json:"password"`
+}
+
 // Login takes a User from the database and a password and returns a JWT.
 func Login(u *User, pw string) (string, error) {
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pw)); err != nil {
 		return "", err
 	}
-
 	return generateTokenString(u)
 }
 

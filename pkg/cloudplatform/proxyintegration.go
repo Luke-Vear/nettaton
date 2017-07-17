@@ -8,11 +8,14 @@ import (
 )
 
 type (
-	Event   apigatewayproxyevt.Event
+	// Event represents an Amazon API Gateway Proxy Event.
+	Event apigatewayproxyevt.Event
+
+	// Context provides information about Lambda execution environment.
 	Context runtime.Context
 )
 
-// Response is a specific JSON response required in order for Lambda Proxy to work with API Gateway.
+// Response is a specific JSON response required for compatibility API Gateway Lambda Proxy.
 type Response struct {
 	Headers    map[string]string `json:"headers"`
 	StatusCode string            `json:"statusCode"`

@@ -13,8 +13,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	if userID, ok := evt.PathParameters["userID"]; !ok || userID == "" {
 		return cpf.NewResponse("400", "", cpf.ErrUserNotSpecified)
 	}
-	user := cpf.NewUser()
-	user.UserID = evt.PathParameters["userID"]
+	user := cpf.NewUser(evt.PathParameters["userID"])
 
 	// Get User from db.
 	if err := cpf.GetUser(user); err != nil {

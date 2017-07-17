@@ -3,6 +3,7 @@ package cloudplatform
 import (
 	"os"
 
+	snq "github.com/Luke-Vear/nettaton/pkg/subnetquiz"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -17,13 +18,35 @@ var (
 	table = os.Getenv("TABLE")
 )
 
+// User struct contains all data about a user.
+type User struct {
+	UserID   string                    `json:"userID"`
+	Password string                    `json:"password"`
+	Email    string                    `json:"email"`
+	Status   string                    `json:"status"`
+	Scores   map[string]*QuestionScore `json:"scores"`
+}
+
+// QuestionScore tracks correct answers and overall attempts for a question kind.
+type QuestionScore struct {
+	Attempts int
+	Correct  int
+}
+
+// NewUser returns a *User with all question types initialised.
+func NewUser(userID string) *User {
+	scores := make(map[string]*QuestionScore)
+	for k := range snq.QuestionFuncMap {
+		scores[k] = &QuestionScore{}
+	}
+	return &User{
+		UserID: userID,
+		Scores: scores,
+	}
+}
+
 // GetUser deserializes the user data into the *User struct.
 func GetUser(u *User) error {
-
-	// // If UserID field is empty, we don't have PK required for query.
-	// if u.UserID == "" {
-	// 	return ErrUserNotSpecified
-	// }
 
 	// Build query from environment and User passed in to function.
 	query := &dynamodb.GetItemInput{
@@ -56,11 +79,6 @@ func GetUser(u *User) error {
 
 // PutUser puts serializes the *User into the database.
 func PutUser(u *User) error {
-
-	// // If UserID field is empty, we don't have PK required for query.
-	// if u.UserID == "" {
-	// 	return ErrUserNotSpecified
-	// }
 
 	// If new user, replace password with password hash.
 	if u.Status == "" {
