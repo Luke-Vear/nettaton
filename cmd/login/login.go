@@ -3,11 +3,7 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/Luke-Vear/nettaton/pkg/auth"
-	"github.com/Luke-Vear/nettaton/pkg/do"
-	"github.com/Luke-Vear/nettaton/pkg/platform"
-	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
-	"github.com/eawsy/aws-lambda-go-event/service/lambda/runtime/event/apigatewayproxyevt"
+	cpf "github.com/Luke-Vear/nettaton/pkg/cloudplatform"
 )
 
 // Request is what the client will be sending.
@@ -16,34 +12,34 @@ type Request struct {
 }
 
 // Handle is the entrypoint for the shim.
-func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, error) {
+func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 
 	var cr Request
 	if err := json.Unmarshal([]byte(evt.Body), &cr); err != nil {
-		return platform.NewResponse("400", "", err)
+		return cpf.NewResponse("400", "", err)
 	}
 
 	// Check required fields.
 	if cr.Password == "" {
-		return platform.NewResponse("400", "", platform.ErrRequiredFieldNotInRequest)
+		return cpf.NewResponse("400", "", cpf.ErrRequiredFieldNotInRequest)
 	}
 
 	// Extract user from path parameters and define PK for query.
 	if userID, ok := evt.PathParameters["userID"]; !ok || userID == "" {
-		return platform.NewResponse("400", "", platform.ErrUserNotSpecified)
+		return cpf.NewResponse("400", "", cpf.ErrUserNotSpecified)
 	}
-	user := do.NewUser()
+	user := cpf.NewUser()
 	user.UserID = evt.PathParameters["userID"]
 
 	// Get User from db.
-	if err := platform.GetUser(user); err != nil {
-		return platform.NewResponse("404", "", err)
+	if err := cpf.GetUser(user); err != nil {
+		return cpf.NewResponse("404", "", err)
 	}
 
 	// Check password from client against hash in database, get a JWT.
-	jwt, err := auth.Login(user, cr.Password)
+	jwt, err := cpf.Login(user, cr.Password)
 	if err != nil {
-		return platform.NewResponse("401", "", err)
+		return cpf.NewResponse("401", "", err)
 	}
 
 	// Return token to client.
@@ -54,7 +50,7 @@ func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, e
 		AccessToken: jwt,
 		TokenType:   "Bearer",
 	})
-	return platform.NewResponse("200", string(body), nil)
+	return cpf.NewResponse("200", string(body), nil)
 }
 
 // Handle is the entrypoint for the shim.

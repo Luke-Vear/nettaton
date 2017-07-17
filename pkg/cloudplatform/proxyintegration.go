@@ -1,7 +1,15 @@
-package platform
+package cloudplatform
 
 import (
 	"fmt"
+
+	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
+	"github.com/eawsy/aws-lambda-go-event/service/lambda/runtime/event/apigatewayproxyevt"
+)
+
+type (
+	Event   apigatewayproxyevt.Event
+	Context runtime.Context
 )
 
 // Response is a specific JSON response required in order for Lambda Proxy to work with API Gateway.
@@ -22,5 +30,5 @@ func NewResponse(statusCode string, body string, err error) (Response, error) {
 		Headers:    map[string]string{"Content-Type": "application/json"},
 		StatusCode: statusCode,
 		Body:       body,
-	}, err
+	}, nil
 }

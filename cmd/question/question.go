@@ -5,13 +5,12 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Luke-Vear/nettaton/pkg/platform"
-	"github.com/Luke-Vear/nettaton/pkg/subnet"
-	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
+	cpf "github.com/Luke-Vear/nettaton/pkg/cloudplatform"
+	snq "github.com/Luke-Vear/nettaton/pkg/subnetquiz"
 )
 
 // Handle is the entrypoint for the shim.
-func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
+func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 
 	// Need to seed for random question generation below.
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -22,11 +21,11 @@ func Handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		Network      string `json:"network"`
 		QuestionKind string `json:"questionKind"`
 	}{
-		IPAddress:    subnet.RandomIP(),
-		Network:      subnet.RandomNetwork(),
-		QuestionKind: subnet.RandomQuestionKind(),
+		IPAddress:    snq.RandomIP(),
+		Network:      snq.RandomNetwork(),
+		QuestionKind: snq.RandomQuestionKind(),
 	})
-	return platform.NewResponse("200", string(body), nil)
+	return cpf.NewResponse("200", string(body), nil)
 }
 
 // Handle is the entrypoint for the shim.

@@ -3,10 +3,7 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/Luke-Vear/nettaton/pkg/do"
-	"github.com/Luke-Vear/nettaton/pkg/platform"
-	"github.com/eawsy/aws-lambda-go-core/service/lambda/runtime"
-	"github.com/eawsy/aws-lambda-go-event/service/lambda/runtime/event/apigatewayproxyevt"
+	cpf "github.com/Luke-Vear/nettaton/pkg/cloudplatform"
 )
 
 // Request is what the client will be sending.
@@ -17,38 +14,37 @@ type Request struct {
 }
 
 // Handle is the entrypoint for the shim.
-func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, error) {
+func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 
 	var cr Request
 	if err := json.Unmarshal([]byte(evt.Body), &cr); err != nil {
-		return platform.NewResponse("400", "", err)
+		return cpf.NewResponse("400", "", err)
 	}
 
 	// Check required fields. TODO: max size.
 	if cr.UserID == "" || cr.Password == "" || cr.Email == "" {
-		return platform.NewResponse("400", "", platform.ErrRequiredFieldNotInRequest)
+		return cpf.NewResponse("400", "", cpf.ErrRequiredFieldNotInRequest)
 	}
 
 	// Define PK for query.
-	user := do.NewUser()
+	user := cpf.NewUser()
 	user.UserID = cr.UserID
 
 	// Try and get user from database, return if there is an error other than user not found.
-	err := platform.GetUser(user)
-	if err != platform.ErrUserNotFoundInDatabase && err != nil {
-		return platform.NewResponse("500", "", err)
+	err := cpf.GetUser(user)
+	if err != cpf.ErrUserNotFoundInDatabase && err != nil {
+		return cpf.NewResponse("500", "", err)
 	}
-
 	// If there is not a user not found error, return.
-	if err != platform.ErrUserNotFoundInDatabase {
-		return platform.NewResponse("409", "", platform.ErrUserAlreadyExists)
+	if err != cpf.ErrUserNotFoundInDatabase {
+		return cpf.NewResponse("409", "", cpf.ErrUserAlreadyExists)
 	}
 
 	// Create user.
 	user.Email = cr.Email
 	user.Password = cr.Password
-	if err := platform.PutUser(user); err != nil {
-		platform.NewResponse("500", "", err)
+	if err := cpf.PutUser(user); err != nil {
+		cpf.NewResponse("500", "", err)
 	}
 
 	// Generate and marshal random IP, network and question into response.
@@ -57,7 +53,7 @@ func Handle(evt *apigatewayproxyevt.Event, ctx *runtime.Context) (interface{}, e
 	}{
 		UserID: user.UserID,
 	})
-	return platform.NewResponse("201", string(body), nil)
+	return cpf.NewResponse("201", string(body), nil)
 }
 
 // Handle is the entrypoint for the shim.

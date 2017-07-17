@@ -1,7 +1,7 @@
-package do
+package cloudplatform
 
 import (
-	"github.com/Luke-Vear/nettaton/pkg/subnet"
+	snq "github.com/Luke-Vear/nettaton/pkg/subnetquiz"
 )
 
 // User struct contains all data about a user.
@@ -25,7 +25,7 @@ func NewUser() *User {
 	scores := make(map[string]*QuestionScore)
 
 	// Loop over all question types and initalize zero values.
-	for k := range subnet.QuestionFuncMap {
+	for k := range snq.QuestionFuncMap {
 		scores[k] = &QuestionScore{}
 	}
 

@@ -1,4 +1,4 @@
-package auth
+package cloudplatform
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Luke-Vear/nettaton/pkg/do"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,7 +15,7 @@ var (
 )
 
 // Login takes a User from the database and a password and returns a JWT.
-func Login(u *do.User, pw string) (string, error) {
+func Login(u *User, pw string) (string, error) {
 
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pw)); err != nil {
 		return "", err
@@ -26,7 +25,7 @@ func Login(u *do.User, pw string) (string, error) {
 }
 
 // GenPasswordHash takes a User from the database and a password and returns a JWT.
-func GenPasswordHash(u *do.User, pw string) error {
+func GenPasswordHash(u *User, pw string) error {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
 	if err != nil {
@@ -39,7 +38,7 @@ func GenPasswordHash(u *do.User, pw string) error {
 
 // Create a new token, specifying signing method and claims.
 // Standard claims: https://tools.ietf.org/html/rfc7519#section-4.1
-func generateTokenString(u *do.User) (string, error) {
+func generateTokenString(u *User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Subject:   u.UserID,

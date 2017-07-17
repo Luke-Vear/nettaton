@@ -1,10 +1,8 @@
-package platform
+package cloudplatform
 
 import (
 	"os"
 
-	"github.com/Luke-Vear/nettaton/pkg/auth"
-	"github.com/Luke-Vear/nettaton/pkg/do"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -20,7 +18,7 @@ var (
 )
 
 // GetUser deserializes the user data into the *User struct.
-func GetUser(u *do.User) error {
+func GetUser(u *User) error {
 
 	// // If UserID field is empty, we don't have PK required for query.
 	// if u.UserID == "" {
@@ -57,7 +55,7 @@ func GetUser(u *do.User) error {
 }
 
 // PutUser puts serializes the *User into the database.
-func PutUser(u *do.User) error {
+func PutUser(u *User) error {
 
 	// // If UserID field is empty, we don't have PK required for query.
 	// if u.UserID == "" {
@@ -66,7 +64,7 @@ func PutUser(u *do.User) error {
 
 	// If new user, replace password with password hash.
 	if u.Status == "" {
-		err := auth.GenPasswordHash(u, u.Password)
+		err := GenPasswordHash(u, u.Password)
 		if err != nil {
 			return err
 		}
