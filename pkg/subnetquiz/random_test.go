@@ -31,7 +31,7 @@ func TestGetRandomNetwork(t *testing.T) {
 func TestGetRandomQuestionKind(t *testing.T) {
 
 	qkinds := make([]string, 0)
-	for k := range QuestionFuncMap {
+	for k := range Questions {
 		qkinds = append(qkinds, k)
 	}
 
@@ -41,21 +41,21 @@ func TestGetRandomQuestionKind(t *testing.T) {
 	}
 }
 
-func isRandStructError(genFunc func() string, expected []string, iter int) bool {
+func isRandStructError(genFunc func() string, allPermutations []string, iter int) bool {
 
-	ranGens := make([]string, iter)
+	generatedOutputs := make([]string, iter)
 	for i := 0; i < iter; i++ {
-		ranGens[i] = genFunc()
+		generatedOutputs[i] = genFunc()
 	}
 
-	correct := make(chan bool, len(expected))
-	for _, v1 := range expected {
-		for _, v2 := range ranGens {
+	var totalUnique int
+	for _, v1 := range allPermutations {
+		for _, v2 := range generatedOutputs {
 			if v1 == v2 {
-				correct <- true
+				totalUnique++
 				break
 			}
 		}
 	}
-	return len(correct) != len(expected)
+	return totalUnique != len(allPermutations)
 }

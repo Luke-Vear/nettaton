@@ -2,7 +2,6 @@ package cloudplatform
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -10,58 +9,42 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var (
-	secret = os.Getenv("SECRET")
-)
-
-type Credentials struct {
-	UserID            string `json:"userID"`
-	ClearTextPassword string `json:"password"`
+// genPwHash takes a cleartext password and returns a hashed one.
+func genPwHash(pw string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
 }
 
 // Login takes a User from the database and a password and returns a JWT.
-func Login(u *User, pw string) (string, error) {
-
-	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pw)); err != nil {
+func login(u *User) (string, error) {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.HashedPassword), []byte(u.ClearTextPassword)); err != nil {
 		return "", err
 	}
 	return generateTokenString(u)
 }
 
-// GenPasswordHash takes a User from the database and a password and returns a JWT.
-func GenPasswordHash(u *User, pw string) error {
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	u.Password = string(hash)
-
-	return nil
-}
-
 // Create a new token, specifying signing method and claims.
 // Standard claims: https://tools.ietf.org/html/rfc7519#section-4.1
+// Get the complete encoded token as a string using the secret.
 func generateTokenString(u *User) (string, error) {
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Subject:   u.UserID,
+		Subject:   u.ID,
 		ExpiresAt: time.Now().Add(time.Hour * 150).Unix(),
 		NotBefore: time.Now().Unix(),
 	})
-
-	// Sign and get the complete encoded token as a string using the secret
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err
 	}
-
 	return tokenString, nil
 }
 
-// UserID checks the token and returns userID.
-func UserID(bearer string) (string, error) {
-
+// parseJWT parses and validates jwt, returns claim field requested by want.
+// Ensures to verify alg claims, won't accept a jwt with no/wrong alg.
+func parseJWT(bearer, want string) (string, error) {
 	token, err := jwt.Parse(strings.Split(bearer, " ")[1],
 
 		func(token *jwt.Token) (interface{}, error) {
@@ -76,6 +59,13 @@ func UserID(bearer string) (string, error) {
 		return "", err
 	}
 
-	// Passed validation above so will have `sub`
-	return token.Claims.(jwt.MapClaims)["sub"].(string), nil
+	if _, ok := token.Claims.(jwt.MapClaims)[want].(string); !ok {
+		return "", ErrClaimNotFoundInJWT
+	}
+	return token.Claims.(jwt.MapClaims)[want].(string), nil
+}
+
+// IDFromToken checks the token and returns id.
+func IDFromToken(bearer string) (string, error) {
+	return parseJWT(bearer, "sub")
 }

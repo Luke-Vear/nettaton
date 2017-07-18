@@ -1,109 +1,119 @@
 package cloudplatform
 
 import (
-	"os"
-
 	snq "github.com/Luke-Vear/nettaton/pkg/subnetquiz"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-var (
-	// Same db session for all database queries.
-	db = dynamodb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String(os.Getenv("REGION"))})))
-
-	// Same table for all database queries.
-	table = os.Getenv("TABLE")
-)
-
 // User struct contains all data about a user.
 type User struct {
-	UserID   string                    `json:"userID"`
-	Password string                    `json:"password"`
-	Email    string                    `json:"email"`
-	Status   string                    `json:"status"`
-	Scores   map[string]*QuestionScore `json:"scores"`
+	ID     string            `json:"id"`
+	Email  string            `json:"email"`
+	Status string            `json:"status"`
+	Marks  map[string]*Marks `json:"marks"`
+
+	// HashedPassword is generated or read from the database.
+	HashedPassword string `json:"passwordHash"`
+
+	// ClearTextPassword is submitted by the client.
+	ClearTextPassword string `json:"-"`
 }
 
-// QuestionScore tracks correct answers and overall attempts for a question kind.
-type QuestionScore struct {
+// Marks tracks correct answers and overall attempts for a question kind.
+type Marks struct {
 	Attempts int
 	Correct  int
 }
 
 // NewUser returns a *User with all question types initialised.
-func NewUser(userID string) *User {
-	scores := make(map[string]*QuestionScore)
-	for k := range snq.QuestionFuncMap {
-		scores[k] = &QuestionScore{}
+func NewUser(id string) *User {
+	marks := make(map[string]*Marks)
+	for k := range snq.Questions {
+		marks[k] = &Marks{}
 	}
 	return &User{
-		UserID: userID,
-		Scores: scores,
+		ID:    id,
+		Marks: marks,
 	}
 }
 
+// Create does
 // GetUser deserializes the user data into the *User struct.
-func GetUser(u *User) error {
+// Build query from environment and User passed in to function.
+// Primary key is id passed in from User.
+// Unmarshal result into User struct passed in.
+// If the password is an empty string, user isn't in database.
+func (u *User) Create() error {
+	if err := u.Read(); err != nil {
+		return err
+	}
+	if u.Status != "" {
+		return ErrUserAlreadyExists
+	}
+	u.Status = "new"
+	pwh, err := genPwHash(u.ClearTextPassword)
+	if err != nil {
+		return err
+	}
+	u.HashedPassword = pwh
+	return u.Update()
+}
 
-	// Build query from environment and User passed in to function.
+// Create does
+// GetUser deserializes the user data into the *User struct.
+// Build query from environment and User passed in to function.
+// Primary key is id passed in from User.
+// Unmarshal result into User struct passed in.
+// If the password is an empty string, user isn't in database.
+func (u *User) Read() error {
 	query := &dynamodb.GetItemInput{
-
 		TableName: aws.String(table),
-
-		// Primary key is userID passed in from User.
 		Key: map[string]*dynamodb.AttributeValue{
-			"userID": {S: aws.String(u.UserID)},
+			"id": {S: aws.String(u.ID)},
 		},
 	}
-
 	result, err := db.GetItem(query)
 	if err != nil {
 		return err
 	}
-
-	// Unmarshal result into User struct passed in.
 	if err := dynamodbattribute.UnmarshalMap(result.Item, u); err != nil {
 		return err
 	}
-
-	// If the password is an empty string, user isn't in database.
-	if u.Password == "" {
-		return ErrUserNotFoundInDatabase
-	}
-
 	return nil
 }
 
-// PutUser puts serializes the *User into the database.
-func PutUser(u *User) error {
-
-	// If new user, replace password with password hash.
-	if u.Status == "" {
-		err := GenPasswordHash(u, u.Password)
-		if err != nil {
-			return err
-		}
-		u.Status = "new"
-	}
-
-	// Marshal User into attribute value map for db query.
+// Update does
+// Marshal User into attribute value map for db query.
+// Build query to insert data.
+func (u *User) Update() error {
 	avm, err := dynamodbattribute.MarshalMap(u)
 	if err != nil {
 		return err
 	}
-
-	// Build query to insert data.
 	query := &dynamodb.PutItemInput{
 		TableName: aws.String(table),
 		Item:      avm,
 	}
-
 	if _, err = db.PutItem(query); err != nil {
 		return err
 	}
-
 	return nil
+}
+
+// Delete NYI
+// TODO
+func (u *User) Delete() error {
+	return nil
+}
+
+// Login does
+// GetUser deserializes the user data into the *User struct.
+// Build query from environment and User passed in to function.
+// Primary key is id passed in from User.
+// Unmarshal result into User struct passed in.
+// If the password is an empty string, user isn't in database.
+func (u *User) Login() (string, error) {
+	return login(u)
 }

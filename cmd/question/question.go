@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"math/rand"
-	"time"
 
 	cpf "github.com/Luke-Vear/nettaton/pkg/cloudplatform"
 	snq "github.com/Luke-Vear/nettaton/pkg/subnetquiz"
@@ -11,9 +9,6 @@ import (
 
 // Handle is the entrypoint for the shim.
 func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
-
-	// Need to seed for random question generation below.
-	rand.Seed(time.Now().UTC().UnixNano())
 
 	// Generate and marshal random IP, network and question into response.
 	body, _ := json.Marshal(struct {

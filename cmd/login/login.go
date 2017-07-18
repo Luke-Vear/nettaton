@@ -8,7 +8,7 @@ import (
 
 // Request is what the client will be sending.
 type Request struct {
-	Password string `json:"password"`
+	cpf.User
 }
 
 // Handle is the entrypoint for the shim.
@@ -20,23 +20,29 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	}
 
 	// Check required fields.
-	if cr.Password == "" {
+	if cr.ClearTextPassword == "" {
 		return cpf.NewResponse("400", "", cpf.ErrRequiredFieldNotInRequest)
 	}
 
 	// Extract user from path parameters and define PK for query.
-	if userID, ok := evt.PathParameters["userID"]; !ok || userID == "" {
+	if id, ok := evt.PathParameters["id"]; !ok || id == "" {
 		return cpf.NewResponse("400", "", cpf.ErrUserNotSpecified)
 	}
-	user := cpf.NewUser(evt.PathParameters["userID"])
 
-	// Get User from db.
-	if err := cpf.GetUser(user); err != nil {
+	// Create *User object.
+	user := cpf.NewUser(evt.PathParameters["id"])
+
+	// Deserialize user from db into User.
+	err := user.Read()
+	if err != nil && err != cpf.ErrUserNotFoundInDatabase {
+		return cpf.NewResponse("500", "", err)
+	}
+	if err == cpf.ErrUserNotFoundInDatabase {
 		return cpf.NewResponse("404", "", err)
 	}
 
 	// Check password from client against hash in database, get a JWT.
-	jwt, err := cpf.Login(user, cr.Password)
+	jwt, err := user.Login()
 	if err != nil {
 		return cpf.NewResponse("401", "", err)
 	}
