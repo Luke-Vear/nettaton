@@ -10,11 +10,11 @@ import (
 // User struct contains all data about a user.
 type User struct {
 	ID     string            `json:"id"`
-	Email  string            `json:"email"`
 	Status string            `json:"status"`
 	Marks  map[string]*Marks `json:"marks"`
 
-	// HashedPassword is generated or read from the database.
+	// HashedPassword is generated for new users or
+	// read from the database for existing ones.
 	HashedPassword string `json:"passwordHash"`
 
 	// ClearTextPassword is submitted by the client.
@@ -39,12 +39,11 @@ func NewUser(id string) *User {
 	}
 }
 
-// Create does
-// GetUser deserializes the user data into the *User struct.
-// Build query from environment and User passed in to function.
-// Primary key is id passed in from User.
-// Unmarshal result into User struct passed in.
-// If the password is an empty string, user isn't in database.
+// Create a user in the database (if none exists). Create will attempt to read
+// the user from the database (this will cause no error if user is not found)
+// it will then check the Status field of the User object, if the status field
+// is empty after the read, the user doesn't exist in the database, so create
+// with the submitted password hashed.
 func (u *User) Create() error {
 	if err := u.Read(); err != nil {
 		return err
@@ -61,12 +60,8 @@ func (u *User) Create() error {
 	return u.Update()
 }
 
-// Create does
-// GetUser deserializes the user data into the *User struct.
-// Build query from environment and User passed in to function.
-// Primary key is id passed in from User.
-// Unmarshal result into User struct passed in.
-// If the password is an empty string, user isn't in database.
+// Read user from database, if the user.ID is not found in the database,
+// the User's fields won't be updated.
 func (u *User) Read() error {
 	query := &dynamodb.GetItemInput{
 		TableName: aws.String(table),
@@ -84,9 +79,7 @@ func (u *User) Read() error {
 	return nil
 }
 
-// Update does
-// Marshal User into attribute value map for db query.
-// Build query to insert data.
+// Update put's the User fields to the database.
 func (u *User) Update() error {
 	avm, err := dynamodbattribute.MarshalMap(u)
 	if err != nil {
@@ -102,18 +95,22 @@ func (u *User) Update() error {
 	return nil
 }
 
-// Delete NYI
-// TODO
+// Delete removes the user from the database.
 func (u *User) Delete() error {
+	query := &dynamodb.DeleteItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(u.ID)},
+		},
+	}
+	if _, err := db.DeleteItem(query); err != nil {
+		return err
+	}
 	return nil
 }
 
-// Login does
-// GetUser deserializes the user data into the *User struct.
-// Build query from environment and User passed in to function.
-// Primary key is id passed in from User.
-// Unmarshal result into User struct passed in.
-// If the password is an empty string, user isn't in database.
+// Login validates the users submitted ClearTextPassword against the
+// HashedPassword from the database, then creates a JWT with some standard
+// claims, returns the signed token as a string.
 func (u *User) Login() (string, error) {
 	return login(u)
 }

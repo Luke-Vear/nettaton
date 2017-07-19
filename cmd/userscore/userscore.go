@@ -9,13 +9,13 @@ import (
 // Handle is invoked by the shim.
 func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 
-	// Extract user from path parameters and define PK for query.
+	// Extract user from path parameters and create User.
 	if id, ok := evt.PathParameters["id"]; !ok || id == "" {
 		return cpf.NewResponse("400", "", cpf.ErrUserNotSpecified)
 	}
 	user := cpf.NewUser(evt.PathParameters["id"])
 
-	// Get User from db.
+	// Read User from db.
 	if err := user.Read(); err != nil {
 		return cpf.NewResponse("404", "", err)
 	}

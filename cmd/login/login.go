@@ -8,6 +8,8 @@ import (
 
 // Request is what the client will be sending.
 type Request struct {
+	// Client should send field:
+	// ClearTextPassword string `json:"-"`
 	cpf.User
 }
 
@@ -24,12 +26,10 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 		return cpf.NewResponse("400", "", cpf.ErrRequiredFieldNotInRequest)
 	}
 
-	// Extract user from path parameters and define PK for query.
+	// Extract user from path parameters and create *User object.
 	if id, ok := evt.PathParameters["id"]; !ok || id == "" {
 		return cpf.NewResponse("400", "", cpf.ErrUserNotSpecified)
 	}
-
-	// Create *User object.
 	user := cpf.NewUser(evt.PathParameters["id"])
 
 	// Deserialize user from db into User.

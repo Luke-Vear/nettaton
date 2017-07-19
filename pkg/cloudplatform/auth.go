@@ -18,7 +18,7 @@ func genPwHash(pw string) (string, error) {
 	return string(hash), nil
 }
 
-// Login takes a User from the database and a password and returns a JWT.
+// login takes a User from the database and a password and returns a JWT.
 func login(u *User) (string, error) {
 	if err := bcrypt.CompareHashAndPassword([]byte(u.HashedPassword), []byte(u.ClearTextPassword)); err != nil {
 		return "", err
@@ -26,7 +26,7 @@ func login(u *User) (string, error) {
 	return generateTokenString(u)
 }
 
-// Create a new token, specifying signing method and claims.
+// Create a new token, specifying signing method and standard claims.
 // Standard claims: https://tools.ietf.org/html/rfc7519#section-4.1
 // Get the complete encoded token as a string using the secret.
 func generateTokenString(u *User) (string, error) {
@@ -48,7 +48,6 @@ func parseJWT(bearer, want string) (string, error) {
 	token, err := jwt.Parse(strings.Split(bearer, " ")[1],
 
 		func(token *jwt.Token) (interface{}, error) {
-			// verify alg claim
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}

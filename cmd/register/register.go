@@ -8,6 +8,9 @@ import (
 
 // Request is what the client will be sending.
 type Request struct {
+	// Client should send fields:
+	// ID                string `json:"id"`
+	// ClearTextPassword string `json:"-"`
 	cpf.User
 }
 
@@ -19,7 +22,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 		return cpf.NewResponse("400", "", err)
 	}
 
-	// Check required fields. TODO: max size.
+	// Check required fields.
 	if cr.ID == "" || cr.ClearTextPassword == "" {
 		return cpf.NewResponse("400", "", cpf.ErrRequiredFieldNotInRequest)
 	}
@@ -36,7 +39,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 		return cpf.NewResponse("409", "", err)
 	}
 
-	// Generate and marshal random IP, network and question into response.
+	// Return user ID to client.
 	body, _ := json.Marshal(struct {
 		ID string `json:"id"`
 	}{

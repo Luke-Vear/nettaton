@@ -15,6 +15,15 @@ type Request struct {
 	QuestionKind string `json:"questionKind"`
 }
 
+// responseBody is the body of the response we want to returnt to the client.
+// If the client is not logged in (they have no JWT), they won't have any
+// marks to update.
+type responseBody struct {
+	UserAnswer   string                `json:"userAnswer"`
+	ActualAnswer string                `json:"actualAnswer"`
+	Marks        map[string]*cpf.Marks `json:"marks"`
+}
+
 // Handle is the entrypoint for the shim.
 func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 
@@ -28,13 +37,13 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 		return cpf.NewResponse("400", "", cpf.ErrRequiredFieldNotInRequest)
 	}
 
-	// Attempt to parse ip address and snq.
+	// Attempt to parse ip address and QuestionKind.
 	nip, cidr, err := snq.Parse(cr.IPAddress, cr.Network)
 	if err != nil {
 		return cpf.NewResponse("400", "", err)
 	}
 
-	// Test if question type is valid, then resolve answer.
+	// Test if question type is valid, if valid then resolve answer.
 	if _, ok := snq.Questions[cr.QuestionKind]; !ok {
 		return cpf.NewResponse("400", "", cpf.ErrInvalidQuestionKind)
 	}
@@ -42,10 +51,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 
 	// If empty JWT, not logged in, happy return.
 	if jwtString, ok := evt.Headers["Authorization"]; !ok || jwtString == "" {
-		body, _ := json.Marshal(struct {
-			UserAnswer   string `json:"userAnswer"`
-			ActualAnswer string `json:"actualAnswer"`
-		}{
+		body, _ := json.Marshal(responseBody{
 			UserAnswer:   cr.Answer,
 			ActualAnswer: actualAnswer,
 		})
@@ -77,12 +83,8 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 		return cpf.NewResponse("500", "", err)
 	}
 
-	// Send actualAnswer back to client.
-	body, _ := json.Marshal(struct {
-		UserAnswer   string                `json:"userAnswer"`
-		ActualAnswer string                `json:"actualAnswer"`
-		Marks        map[string]*cpf.Marks `json:"marks"`
-	}{
+	// Send actualAnswer and Marks back to client.
+	body, _ := json.Marshal(responseBody{
 		UserAnswer:   cr.Answer,
 		ActualAnswer: actualAnswer,
 		Marks:        user.Marks,
