@@ -3,3 +3,5 @@ debug.test
 handler.so
 handler.zip
 tmpl
+terraform.tfstate
+terraform.tfstate.backup
