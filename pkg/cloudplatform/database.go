@@ -9,22 +9,24 @@ import (
 
 // User struct contains all data about a user.
 type User struct {
-	ID     string            `json:"id"`
-	Status string            `json:"status"`
-	Marks  map[string]*Marks `json:"marks"`
+	ID     string `json:"id"`
+	Status string `json:"status"`
+
+	// The Marks for each question type.
+	Marks map[string]*Marks `json:"marks"`
 
 	// HashedPassword is generated for new users or
 	// read from the database for existing ones.
 	HashedPassword string `json:"passwordHash"`
 
 	// ClearTextPassword is submitted by the client.
-	ClearTextPassword string `json:"-"`
+	ClearTextPassword string `json:"clearTextPassword"`
 }
 
 // Marks tracks correct answers and overall attempts for a question kind.
 type Marks struct {
-	Attempts int
-	Correct  int
+	Attempts uint `json:"attempts"`
+	Correct  uint `json:"correct"`
 }
 
 // NewUser returns a *User with all question types initialised.
@@ -81,6 +83,7 @@ func (u *User) Read() error {
 
 // Update put's the User fields to the database.
 func (u *User) Update() error {
+	u.ClearTextPassword = ""
 	avm, err := dynamodbattribute.MarshalMap(u)
 	if err != nil {
 		return err

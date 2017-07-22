@@ -11,7 +11,7 @@ import (
 
 // genPwHash takes a cleartext password and returns a hashed one.
 func genPwHash(pw string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.MinCost)
 	if err != nil {
 		return "", err
 	}

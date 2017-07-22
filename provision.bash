@@ -23,8 +23,8 @@ if (( $? != 0 )); then
   echo "No scoredb, creating"
   DYNAMO_ARN=$(aws dynamodb create-table \
     --table-name ${TABLE_NAME} \
-    --attribute-definitions AttributeName=userID,AttributeType=S \
-    --key-schema AttributeName=userID,KeyType=HASH \
+    --attribute-definitions AttributeName=id,AttributeType=S \
+    --key-schema AttributeName=id,KeyType=HASH \
     --provisioned-throughput ReadCapacityUnits=3,WriteCapacityUnits=3 \
     --query 'TableDescription.TableArn' \
     --output text)

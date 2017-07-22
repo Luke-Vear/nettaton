@@ -8,8 +8,6 @@ import (
 
 // Request is what the client will be sending.
 type Request struct {
-	// Client should send field:
-	// ClearTextPassword string `json:"-"`
 	cpf.User
 }
 
