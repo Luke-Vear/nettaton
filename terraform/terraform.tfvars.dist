@@ -1,0 +1,7 @@
+lambda_env_variables = {
+  REGION = "eu-west-1"
+  TABLE  = "nettaton-env-userdb"
+  SECRET = "123abc"
+}
+
+env = "env"

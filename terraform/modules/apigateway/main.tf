@@ -32,6 +32,10 @@ output "user_resource_id" {
   value = "${aws_api_gateway_resource.user.id}"
 }
 
+output "user_resource_path" {
+  value = "${aws_api_gateway_resource.user.path}"
+}
+
 resource "aws_api_gateway_resource" "user_id" {
   rest_api_id = "${aws_api_gateway_rest_api.api.id}"
   parent_id   = "${aws_api_gateway_resource.user.id}"
@@ -48,6 +52,10 @@ output "score_resource_id" {
   value = "${aws_api_gateway_resource.score.id}"
 }
 
+output "score_resource_path" {
+  value = "${aws_api_gateway_resource.score.path}"
+}
+
 resource "aws_api_gateway_resource" "token" {
   rest_api_id = "${aws_api_gateway_rest_api.api.id}"
   parent_id   = "${aws_api_gateway_resource.user_id.id}"
@@ -56,4 +64,8 @@ resource "aws_api_gateway_resource" "token" {
 
 output "token_resource_id" {
   value = "${aws_api_gateway_resource.token.id}"
+}
+
+output "token_resource_path" {
+  value = "${aws_api_gateway_resource.token.path}"
 }
