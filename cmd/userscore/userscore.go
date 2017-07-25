@@ -19,6 +19,9 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	if err := user.Read(); err != nil {
 		return cpf.NewResponse("404", "", err)
 	}
+	if user.Status == "" {
+		return cpf.NewResponse("404", "", cpf.ErrUserNotFoundInDatabase)
+	}
 
 	// Return only marks in response.
 	body, _ := json.Marshal(struct {
