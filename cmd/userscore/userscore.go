@@ -17,7 +17,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 
 	// Read User from db.
 	if err := user.Read(); err != nil {
-		return cpf.NewResponse("404", "", err)
+		return cpf.NewResponse("500", "", err)
 	}
 	if user.Status == "" {
 		return cpf.NewResponse("404", "", cpf.ErrUserNotFoundInDatabase)

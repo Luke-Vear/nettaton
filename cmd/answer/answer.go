@@ -71,6 +71,9 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	if err := user.Read(); err != nil {
 		return cpf.NewResponse("500", "", err)
 	}
+	if user.Status == "" {
+		return cpf.NewResponse("418", "", cpf.ErrValidJwtButNoUserInDb)
+	}
 
 	// Increment marks.
 	if actualAnswer == cr.Answer {
