@@ -24,11 +24,9 @@ type Response struct {
 
 // NewResponse returns a properly formatted Response.
 func NewResponse(statusCode string, body string, err error) (Response, error) {
-
 	if err != nil {
 		body = fmt.Sprintf(`{"Error": "%v"}`, err)
 	}
-
 	return Response{
 		Headers:    map[string]string{"Content-Type": "application/json"},
 		StatusCode: statusCode,
