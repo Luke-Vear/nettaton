@@ -5,3 +5,4 @@ handler.zip
 tmpl
 terraform.tfstate
 terraform.tfstate.backup
+.terraform
