@@ -10,6 +10,10 @@ cd ${PROJECT_ROOT}
 for dir in ${BUILD_LIST[@]}; do
   cd $dir
   echo "Building ${dir##*/}"
-  make &
+  make #&
   cd - >/dev/null
 done
+
+echo "---- ---- ---- ----"
+echo "Building Complete"
+echo "---- ---- ---- ----"

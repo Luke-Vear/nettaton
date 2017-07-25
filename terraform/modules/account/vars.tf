@@ -1,0 +1,2 @@
+# account/vars.tf
+

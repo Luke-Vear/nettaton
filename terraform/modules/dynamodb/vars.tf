@@ -1,0 +1,2 @@
+# dynamodb/vars.tf
+
