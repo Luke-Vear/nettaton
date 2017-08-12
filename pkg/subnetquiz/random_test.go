@@ -24,7 +24,7 @@ func TestGetRandomNetwork(t *testing.T) {
 
 	iterations := 2048
 	if isRandStructError(RandomNetwork, allPossNets, iterations) {
-		t.Error("getRandomNetwork() not producing all possible random question kinds.")
+		t.Error("getRandomNetwork() not producing all possible random networks.")
 	}
 }
 
