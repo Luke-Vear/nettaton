@@ -2,17 +2,8 @@
 
 Subnet question game to train your networking skills!
 
-## API
+## TODO
 
-* /question
-GET  -> question
-POST -> answer
-
-* /user
-POST -> register
-
-* /user/{userID}/token
-POST -> login
-
-* /user/{userID}/score
-GET  -> userscore
+* front end
+* tests
+* hosted
