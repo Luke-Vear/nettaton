@@ -387,12 +387,12 @@ func TestHostsInNet(t *testing.T) {
 
 }
 
-func TestCpnip(t *testing.T) {
+func TestCopyNIP(t *testing.T) {
 
 	ipToBeCopied, ipToBeCompared := net.IP{10, 10, 10, 10}, net.IP{10, 10, 10, 10}
 
 	// Copy IP and mutate original.
-	copiedIP := cpnip(ipToBeCopied)
+	copiedIP := copyNIP(ipToBeCopied)
 	ipToBeCopied[len(ipToBeCopied)-1]++
 
 	if copiedIP.Equal(ipToBeCopied) {
