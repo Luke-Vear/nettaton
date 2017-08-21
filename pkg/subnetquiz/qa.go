@@ -83,7 +83,7 @@ func toCidr(n string) (string, error) {
 // First returns the first valid IP address in the range.
 func First(nip net.IP, cidr uint) string {
 
-	cpnip := cpnip(nip)
+	cpnip := copyNIP(nip)
 	cpnip[3]++
 
 	return cpnip.String()
@@ -92,7 +92,7 @@ func First(nip net.IP, cidr uint) string {
 // Last returns the last valid IP address in the range.
 func Last(nip net.IP, cidr uint) string {
 
-	cpnip := cpnip(nip)
+	cpnip := copyNIP(nip)
 	hosts := hosts(cidr)
 
 	cpnip[0] = cpnip[0] + byte(hosts/(1<<24))
@@ -122,8 +122,8 @@ func HostsInNet(nip net.IP, cidr uint) string {
 	return strconv.Itoa(hosts(cidr))
 }
 
-// cpnip returns a copy of the net.IP to prevent global state mutation.
-func cpnip(nip net.IP) net.IP {
+// copyNIP returns a copy of the net.IP to prevent global state mutation.
+func copyNIP(nip net.IP) net.IP {
 	cpnip := make(net.IP, len(nip))
 	copy(cpnip, nip)
 	return cpnip
