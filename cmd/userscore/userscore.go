@@ -19,7 +19,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	if err := user.Read(); err != nil {
 		return cpf.NewResponse("500", "", err)
 	}
-	if user.Status == "" {
+	if user.IsNotFound() {
 		return cpf.NewResponse("404", "", cpf.ErrUserNotFoundInDatabase)
 	}
 
@@ -27,7 +27,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	body, _ := json.Marshal(struct {
 		Marks map[string]*cpf.Marks `json:"marks"`
 	}{
-		Marks: user.Marks,
+		Marks: user.ListMarks(),
 	})
 	return cpf.NewResponse("200", string(body), nil)
 }

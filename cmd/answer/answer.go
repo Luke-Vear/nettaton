@@ -71,15 +71,9 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	if err := user.Read(); err != nil {
 		return cpf.NewResponse("500", "", err)
 	}
-	if user.Status == "" {
-		return cpf.NewResponse("418", "", cpf.ErrValidJwtButNoUserInDb)
-	}
 
 	// Increment marks.
-	if actualAnswer == cr.Answer {
-		user.Marks[cr.QuestionKind].Correct++
-	}
-	user.Marks[cr.QuestionKind].Attempts++
+	user.GradeAnswer(actualAnswer == cr.Answer, cr.QuestionKind)
 
 	// Put modified User back into db.
 	if err := user.Update(); err != nil {
@@ -90,7 +84,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	body, _ := json.Marshal(responseBody{
 		UserAnswer:   cr.Answer,
 		ActualAnswer: actualAnswer,
-		Marks:        user.Marks,
+		Marks:        user.ListMarks(),
 	})
 	return cpf.NewResponse("200", string(body), nil)
 }

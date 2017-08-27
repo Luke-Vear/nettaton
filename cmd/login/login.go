@@ -40,7 +40,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	}
 
 	// Check password from client against hash in database, get a JWT.
-	jwt, err := user.Login()
+	jwt, err := user.Login(cr.ClearTextPassword)
 	if err != nil {
 		return cpf.NewResponse("401", "", err)
 	}

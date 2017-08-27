@@ -19,8 +19,8 @@ func genPwHash(pw string) (string, error) {
 }
 
 // login takes a User from the database and a password and returns a JWT.
-func login(u *User) (string, error) {
-	if err := bcrypt.CompareHashAndPassword([]byte(u.HashedPassword), []byte(u.ClearTextPassword)); err != nil {
+func login(u *User, clearTextPassword string) (string, error) {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.HashedPassword), []byte(clearTextPassword)); err != nil {
 		return "", err
 	}
 	return generateTokenString(u)

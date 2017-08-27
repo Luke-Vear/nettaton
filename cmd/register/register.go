@@ -40,7 +40,7 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	body, _ := json.Marshal(struct {
 		ID string `json:"id"`
 	}{
-		ID: user.ID,
+		ID: cr.ID,
 	})
 	return cpf.NewResponse("201", string(body), nil)
 }

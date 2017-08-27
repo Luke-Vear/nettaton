@@ -16,10 +16,26 @@ var (
 	secret = os.Getenv("SECRET")
 
 	// Same db session for all database queries.
+	// db = dynamodb.New(
+	// 	session.Must(
+	// 		session.NewSession(
+	// 			&aws.Config{
+	// 				Region: aws.String(
+	// 					os.Getenv("REGION"))})))
+	db GetDeletePutter
+)
+
+func init() {
 	db = dynamodb.New(
 		session.Must(
 			session.NewSession(
 				&aws.Config{
 					Region: aws.String(
 						os.Getenv("REGION"))})))
-)
+}
+
+type GetDeletePutter interface {
+	GetItem(*dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error)
+	DeleteItem(*dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
+	PutItem(*dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
+}

@@ -23,6 +23,18 @@ type User struct {
 	ClearTextPassword string `json:"clearTextPassword"`
 }
 
+type UserDatabaseEntity interface {
+	GradeAnswer(correct bool, questionKind string)
+	ListMarks() map[string]*Marks
+
+	IsNotFound() bool
+	Create() error
+	Read() error
+	Update() error
+	Delete() error
+	Login(string) (string, error)
+}
+
 // Marks tracks correct answers and overall attempts for a question kind.
 type Marks struct {
 	Attempts uint `json:"attempts"`
@@ -30,7 +42,7 @@ type Marks struct {
 }
 
 // NewUser returns a *User with all question types initialised.
-func NewUser(id string) *User {
+func NewUser(id string) UserDatabaseEntity {
 	marks := make(map[string]*Marks)
 	for k := range snq.Questions {
 		marks[k] = &Marks{}
@@ -41,13 +53,28 @@ func NewUser(id string) *User {
 	}
 }
 
+func (u *User) GradeAnswer(correct bool, questionKind string) {
+	if correct {
+		u.Marks[questionKind].Correct++
+	}
+	u.Marks[questionKind].Attempts++
+}
+
+func (u *User) ListMarks() map[string]*Marks {
+	return u.Marks
+}
+
+func (u *User) IsNotFound() bool {
+	return u.Status == ""
+}
+
 // Create a user in the database (if none exists). Create will attempt to read
 // the user from the database (this will cause no error if user is not found)
 // it will then check the Status field of the User object, if the status field
 // is empty after the read, the user doesn't exist in the database, so create
 // with the submitted password hashed.
 func (u *User) Create() error {
-	if err := u.Read(); err != nil {
+	if err := u.Read(); err != nil && err != ErrUserNotFoundInDatabase {
 		return err
 	}
 	if u.Status != "" {
@@ -77,6 +104,9 @@ func (u *User) Read() error {
 	}
 	if err := dynamodbattribute.UnmarshalMap(result.Item, u); err != nil {
 		return err
+	}
+	if u.IsNotFound() {
+		return ErrUserNotFoundInDatabase
 	}
 	return nil
 }
@@ -114,6 +144,6 @@ func (u *User) Delete() error {
 // Login validates the users submitted ClearTextPassword against the
 // HashedPassword from the database, then creates a JWT with some standard
 // claims, returns the signed token as a string.
-func (u *User) Login() (string, error) {
-	return login(u)
+func (u *User) Login(clearTextPassword string) (string, error) {
+	return login(u, clearTextPassword)
 }
