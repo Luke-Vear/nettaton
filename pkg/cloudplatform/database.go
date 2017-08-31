@@ -23,7 +23,7 @@ type User struct {
 	ClearTextPassword string `json:"clearTextPassword"`
 }
 
-type UserDatabaseClient interface {
+type DatabaseEntity interface {
 	GradeAnswer(correct bool, questionKind string)
 	ListMarks() map[string]*Marks
 
@@ -41,7 +41,7 @@ type Marks struct {
 }
 
 // NewUser returns a *User with all question types initialised.
-func NewUser(id string) UserDatabaseClient {
+func NewUser(id string) DatabaseEntity {
 	marks := make(map[string]*Marks)
 	for k := range snq.Questions {
 		marks[k] = &Marks{}
