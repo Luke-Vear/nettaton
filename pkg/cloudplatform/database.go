@@ -23,11 +23,10 @@ type User struct {
 	ClearTextPassword string `json:"clearTextPassword"`
 }
 
-type UserDatabaseEntity interface {
+type UserDatabaseClient interface {
 	GradeAnswer(correct bool, questionKind string)
 	ListMarks() map[string]*Marks
 
-	IsNotFound() bool
 	Create() error
 	Read() error
 	Update() error
@@ -42,7 +41,7 @@ type Marks struct {
 }
 
 // NewUser returns a *User with all question types initialised.
-func NewUser(id string) UserDatabaseEntity {
+func NewUser(id string) UserDatabaseClient {
 	marks := make(map[string]*Marks)
 	for k := range snq.Questions {
 		marks[k] = &Marks{}
@@ -53,6 +52,7 @@ func NewUser(id string) UserDatabaseEntity {
 	}
 }
 
+// GradeAnswer foo.
 func (u *User) GradeAnswer(correct bool, questionKind string) {
 	if correct {
 		u.Marks[questionKind].Correct++
@@ -60,11 +60,13 @@ func (u *User) GradeAnswer(correct bool, questionKind string) {
 	u.Marks[questionKind].Attempts++
 }
 
+// ListMarks bla.
 func (u *User) ListMarks() map[string]*Marks {
 	return u.Marks
 }
 
-func (u *User) IsNotFound() bool {
+// isNotFound is true if user is not in db (after a read).
+func (u *User) isNotFound() bool {
 	return u.Status == ""
 }
 
@@ -77,7 +79,7 @@ func (u *User) Create() error {
 	if err := u.Read(); err != nil && err != ErrUserNotFoundInDatabase {
 		return err
 	}
-	if u.Status != "" {
+	if !u.isNotFound() {
 		return ErrUserAlreadyExists
 	}
 	u.Status = "new"
@@ -105,7 +107,7 @@ func (u *User) Read() error {
 	if err := dynamodbattribute.UnmarshalMap(result.Item, u); err != nil {
 		return err
 	}
-	if u.IsNotFound() {
+	if u.isNotFound() {
 		return ErrUserNotFoundInDatabase
 	}
 	return nil

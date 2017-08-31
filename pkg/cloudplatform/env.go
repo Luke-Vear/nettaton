@@ -16,12 +16,6 @@ var (
 	secret = os.Getenv("SECRET")
 
 	// Same db session for all database queries.
-	// db = dynamodb.New(
-	// 	session.Must(
-	// 		session.NewSession(
-	// 			&aws.Config{
-	// 				Region: aws.String(
-	// 					os.Getenv("REGION"))})))
 	db GetDeletePutter
 )
 

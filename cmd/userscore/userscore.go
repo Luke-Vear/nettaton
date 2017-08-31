@@ -15,12 +15,13 @@ func Handle(evt *cpf.Event, ctx *cpf.Context) (interface{}, error) {
 	}
 	user := cpf.NewUser(evt.PathParameters["id"])
 
-	// Read User from db.
-	if err := user.Read(); err != nil {
+	// Deserialize user from db into User.
+	err := user.Read()
+	if err != nil && err != cpf.ErrUserNotFoundInDatabase {
 		return cpf.NewResponse("500", "", err)
 	}
-	if user.IsNotFound() {
-		return cpf.NewResponse("404", "", cpf.ErrUserNotFoundInDatabase)
+	if err == cpf.ErrUserNotFoundInDatabase {
+		return cpf.NewResponse("404", "", err)
 	}
 
 	// Return only marks in response.
