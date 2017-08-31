@@ -23,17 +23,6 @@ type User struct {
 	ClearTextPassword string `json:"clearTextPassword"`
 }
 
-type DatabaseEntity interface {
-	GradeAnswer(correct bool, questionKind string)
-	ListMarks() map[string]*Marks
-
-	Create() error
-	Read() error
-	Update() error
-	Delete() error
-	Login(string) (string, error)
-}
-
 // Marks tracks correct answers and overall attempts for a question kind.
 type Marks struct {
 	Attempts uint `json:"attempts"`
@@ -41,7 +30,7 @@ type Marks struct {
 }
 
 // NewUser returns a *User with all question types initialised.
-func NewUser(id string) DatabaseEntity {
+func NewUser(id string) *User {
 	marks := make(map[string]*Marks)
 	for k := range snq.Questions {
 		marks[k] = &Marks{}
@@ -52,7 +41,7 @@ func NewUser(id string) DatabaseEntity {
 	}
 }
 
-// GradeAnswer foo.
+// GradeAnswer increments the users score if correct, and their attempts regardless.
 func (u *User) GradeAnswer(correct bool, questionKind string) {
 	if correct {
 		u.Marks[questionKind].Correct++
@@ -60,7 +49,7 @@ func (u *User) GradeAnswer(correct bool, questionKind string) {
 	u.Marks[questionKind].Attempts++
 }
 
-// ListMarks bla.
+// ListMarks returns the users Marks.
 func (u *User) ListMarks() map[string]*Marks {
 	return u.Marks
 }
@@ -68,6 +57,13 @@ func (u *User) ListMarks() map[string]*Marks {
 // isNotFound is true if user is not in db (after a read).
 func (u *User) isNotFound() bool {
 	return u.Status == ""
+}
+
+// Login validates the users submitted ClearTextPassword against the
+// HashedPassword from the database, then creates a JWT with some standard
+// claims, returns the signed token as a string.
+func (u *User) Login(clearTextPassword string) (string, error) {
+	return login(u, clearTextPassword)
 }
 
 // Create a user in the database (if none exists). Create will attempt to read
@@ -130,6 +126,7 @@ func (u *User) Update() error {
 	return nil
 }
 
+/* Not yet required
 // Delete removes the user from the database.
 func (u *User) Delete() error {
 	query := &dynamodb.DeleteItemInput{
@@ -142,10 +139,4 @@ func (u *User) Delete() error {
 	}
 	return nil
 }
-
-// Login validates the users submitted ClearTextPassword against the
-// HashedPassword from the database, then creates a JWT with some standard
-// claims, returns the signed token as a string.
-func (u *User) Login(clearTextPassword string) (string, error) {
-	return login(u, clearTextPassword)
-}
+*/

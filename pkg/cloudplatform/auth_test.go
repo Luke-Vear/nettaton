@@ -6,10 +6,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var (
-	testPassword123 = "$2a$10$YZtNOffXRIekdOzILPokJuaX1Yn5qIi2bEY1kbPWAcTvdHl77dqca"
-)
-
 func TestGenPwHash(t *testing.T) {
 	password := "世界世界世界世界"
 	pwHash, _ := genPwHash(password)
@@ -20,15 +16,15 @@ func TestGenPwHash(t *testing.T) {
 
 func TestLogin(t *testing.T) {
 	user := NewUser("namesAreNotImportant")
-	user.(*User).HashedPassword = testPassword123
+	user.HashedPassword = "$2a$10$YZtNOffXRIekdOzILPokJuaX1Yn5qIi2bEY1kbPWAcTvdHl77dqca" //testPassword123
 
-	_, err := login(user.(*User), "testPassword123")
+	_, err := login(user, "testPassword123")
 	if err != nil {
 		t.Errorf("err: %v, expected nil err", err)
 	}
 
 	expectErr := "crypto/bcrypt: hashedPassword is not the hash of the given password"
-	_, actualErr := login(user.(*User), "")
+	_, actualErr := login(user, "")
 	if actualErr.Error() != expectErr {
 		t.Errorf("actualErr: %v, expected: %v", actualErr.Error(), expectErr)
 	}
@@ -38,7 +34,7 @@ func TestGenerateTokenStringParseJWT(t *testing.T) {
 	name := "thisWillBeTheSub"
 	user := NewUser(name)
 
-	validToken, _ := generateTokenString(user.(*User))
+	validToken, _ := generateTokenString(user)
 	actualSubClaim, err := parseJWT("Bearer: "+validToken, "sub")
 	if actualSubClaim != name {
 		t.Errorf("actualSubClaim: %v, expectedSubClaim: %v", actualSubClaim, name)
@@ -50,7 +46,7 @@ func TestGenerateTokenStringParseJWT(t *testing.T) {
 		t.Errorf("actualErr: %v, expected: signature is invalid", err.Error())
 	}
 
-	_, err = generateTokenString(user.(*User))
+	_, err = generateTokenString(user)
 	if err != nil {
 		t.Errorf("err: %v", err)
 	}
@@ -59,7 +55,7 @@ func TestGenerateTokenStringParseJWT(t *testing.T) {
 func TestIDFromToken(t *testing.T) {
 	name := "thisWillBeTheSub"
 	user := NewUser(name)
-	validToken, _ := generateTokenString(user.(*User))
+	validToken, _ := generateTokenString(user)
 	actualSub, _ := IDFromToken("Bearer: " + validToken)
 	if actualSub != name {
 		t.Errorf("actualSub: %v, expectedSub: %v", actualSub, name)
