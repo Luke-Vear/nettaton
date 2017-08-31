@@ -39,11 +39,22 @@ func TestGenerateTokenStringParseJWT(t *testing.T) {
 	if actualSubClaim != name {
 		t.Errorf("actualSubClaim: %v, expectedSubClaim: %v", actualSubClaim, name)
 	}
+	_, err = parseJWT("Bearer: "+validToken, "somethingElse")
+	if err != ErrClaimNotFoundInJWT {
+		t.Errorf("actualErr: %v, expectedErr: %v", err, ErrClaimNotFoundInJWT)
+	}
 
 	expiredToken := "Bearer: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MDEyNTg2NjgsIm5iZiI6MTUwMDcxODY2OCwic3ViIjoibmljayJ9.lNSCEYI9Ij7XLlOB4yOq8Ezd1pQeMojmuqeOa4f3LwY"
 	_, err = parseJWT(expiredToken, "sub")
 	if err.Error() != "signature is invalid" {
 		t.Errorf("actualErr: %v, expected: signature is invalid", err.Error())
+	}
+
+	badSignMethodToken := "Bearer: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1MDEyNTg2NjgsIm5iZiI6MTUwMDcxODY2OCwic3ViIjoibmljayJ9.lNSCEYI9Ij7XLlOB4yOq8Ezd1pQeMojmuqeOa4f3LwY"
+	expectErr := "Unexpected signing method: RS256"
+	_, err = parseJWT(badSignMethodToken, "sub")
+	if err.Error() != expectErr {
+		t.Errorf("actualErr: %v, expectErr: %v", err, expectErr)
 	}
 
 	_, err = generateTokenString(user)

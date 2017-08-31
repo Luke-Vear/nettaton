@@ -16,7 +16,7 @@ var (
 	secret = os.Getenv("SECRET")
 
 	// Same db session for all database queries.
-	db GetDeletePutter
+	db GetPutter
 )
 
 func init() {
@@ -28,8 +28,7 @@ func init() {
 						os.Getenv("REGION"))})))
 }
 
-type GetDeletePutter interface {
+type GetPutter interface {
 	GetItem(*dynamodb.GetItemInput) (*dynamodb.GetItemOutput, error)
-	DeleteItem(*dynamodb.DeleteItemInput) (*dynamodb.DeleteItemOutput, error)
 	PutItem(*dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
 }

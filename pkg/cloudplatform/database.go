@@ -54,7 +54,7 @@ func (u *User) ListMarks() map[string]*Marks {
 	return u.Marks
 }
 
-// isNotFound is true if user is not in db (after a read).
+// isNotFound is true if user is not in db after a Read().
 func (u *User) isNotFound() bool {
 	return u.Status == ""
 }
