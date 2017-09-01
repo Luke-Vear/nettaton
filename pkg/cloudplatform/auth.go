@@ -66,5 +66,6 @@ func parseJWT(bearer, want string) (string, error) {
 
 // IDFromToken checks the token and returns id.
 func IDFromToken(bearer string) (string, error) {
+	// check format "Bearer: `jwt`"
 	return parseJWT(bearer, "sub")
 }

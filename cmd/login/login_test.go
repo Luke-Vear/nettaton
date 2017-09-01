@@ -21,9 +21,35 @@ func TestHandle(t *testing.T) {
 		expectErr   error
 	}{
 		{
-			description: "user not specified",
+			description: "no body",
 			inputEvt:    &cpf.Event{},
 			inputCtx:    &cpf.Context{},
+			expectResp: &cpf.Response{
+				Headers:    headers,
+				StatusCode: "400",
+				Body:       `{"Error": "unexpected end of JSON input"}`,
+			},
+			expectErr: nil,
+		},
+		{
+			description: "missing password",
+			inputEvt: &cpf.Event{
+				Body: `{"ID": "dave"}`,
+			},
+			inputCtx: &cpf.Context{},
+			expectResp: &cpf.Response{
+				Headers:    headers,
+				StatusCode: "400",
+				Body:       `{"Error": "required request field empty"}`,
+			},
+			expectErr: nil,
+		},
+		{
+			description: "no user",
+			inputEvt: &cpf.Event{
+				Body: `{"id": "dave", "clearTextPassword": "abc123"}`,
+			},
+			inputCtx: &cpf.Context{},
 			expectResp: &cpf.Response{
 				Headers:    headers,
 				StatusCode: "400",
@@ -32,8 +58,9 @@ func TestHandle(t *testing.T) {
 			expectErr: nil,
 		},
 		{
-			description: "user not specified",
+			description: "no region",
 			inputEvt: &cpf.Event{
+				Body:           `{"id": "dave", "clearTextPassword": "abc123"}`,
 				PathParameters: pathParameters,
 			},
 			inputCtx: &cpf.Context{},

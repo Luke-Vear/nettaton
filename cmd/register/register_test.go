@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	headers        = map[string]string{"Content-Type": "application/json"}
-	pathParameters = map[string]string{"id": "dave"}
+	headers = map[string]string{"Content-Type": "application/json"}
 )
 
 func TestHandle(t *testing.T) {
@@ -21,20 +20,33 @@ func TestHandle(t *testing.T) {
 		expectErr   error
 	}{
 		{
-			description: "user not specified",
+			description: "no body",
 			inputEvt:    &cpf.Event{},
 			inputCtx:    &cpf.Context{},
 			expectResp: &cpf.Response{
 				Headers:    headers,
 				StatusCode: "400",
-				Body:       `{"Error": "user not specified"}`,
+				Body:       `{"Error": "unexpected end of JSON input"}`,
 			},
 			expectErr: nil,
 		},
 		{
-			description: "user not specified",
+			description: "missing password",
 			inputEvt: &cpf.Event{
-				PathParameters: pathParameters,
+				Body: `{"ID": "dave"}`,
+			},
+			inputCtx: &cpf.Context{},
+			expectResp: &cpf.Response{
+				Headers:    headers,
+				StatusCode: "400",
+				Body:       `{"Error": "required request field empty"}`,
+			},
+			expectErr: nil,
+		},
+		{
+			description: "no region",
+			inputEvt: &cpf.Event{
+				Body: `{"id": "dave", "clearTextPassword": "abc123"}`,
 			},
 			inputCtx: &cpf.Context{},
 			expectResp: &cpf.Response{
