@@ -12,7 +12,7 @@ func TestNewResponse(t *testing.T) {
 		err        error
 	}
 	type expected struct {
-		resp Response
+		resp *Response
 		err  error
 	}
 	tt := []struct {
@@ -30,7 +30,7 @@ func TestNewResponse(t *testing.T) {
 			},
 
 			expected{
-				resp: Response{
+				resp: &Response{
 					Headers:    map[string]string{"Content-Type": "application/json"},
 					StatusCode: "200",
 					Body:       "hello",
@@ -48,7 +48,7 @@ func TestNewResponse(t *testing.T) {
 			},
 
 			expected{
-				resp: Response{
+				resp: &Response{
 					Headers:    map[string]string{"Content-Type": "application/json"},
 					StatusCode: "503",
 					Body:       `{"Error": "user already exists in database"}`,

@@ -19,7 +19,7 @@ func TestHandle(t *testing.T) {
 	if err != nil {
 		t.Errorf("actual: %v, error should be nil", err)
 	}
-	r := resp.(cpf.Response)
+	r := resp.(*cpf.Response)
 	if r.Body == "" || !reflect.DeepEqual(r.Headers, expectResp.Headers) || r.StatusCode != expectResp.StatusCode {
 		t.Errorf("malformed response: %v", r)
 	}

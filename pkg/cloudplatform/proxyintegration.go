@@ -23,11 +23,11 @@ type Response struct {
 }
 
 // NewResponse returns a properly formatted Response.
-func NewResponse(statusCode, body string, err error) (Response, error) {
+func NewResponse(statusCode, body string, err error) (*Response, error) {
 	if err != nil {
 		body = fmt.Sprintf(`{"Error": "%v"}`, err)
 	}
-	return Response{
+	return &Response{
 		Headers:    map[string]string{"Content-Type": "application/json"},
 		StatusCode: statusCode,
 		Body:       body,
