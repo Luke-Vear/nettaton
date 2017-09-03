@@ -2,6 +2,6 @@
 
 set -e
 
-for t in $(go list ./... | grep -v vendor); do
-  go test -cover ${t}
+for t in $(go list ./... | grep -v -E 'vendor|sandbox'); do
+  go test -cover ${t} 
 done
