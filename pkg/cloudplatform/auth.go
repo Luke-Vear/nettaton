@@ -45,7 +45,11 @@ func generateTokenString(u *User) (string, error) {
 // parseJWT parses and validates jwt, returns claim field requested by want.
 // Ensures to verify alg claims, won't accept a jwt with no/wrong alg.
 func parseJWT(bearer, want string) (string, error) {
-	token, err := jwt.Parse(strings.Split(bearer, " ")[1],
+	authHeader := strings.Split(bearer, " ")
+	if len(authHeader) != 2 {
+		return "", ErrInvalidJWT
+	}
+	token, err := jwt.Parse(authHeader[1],
 
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

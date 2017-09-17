@@ -9,4 +9,5 @@ var (
 	ErrRequiredFieldNotInRequest = errors.New("required request field empty")
 	ErrInvalidQuestionKind       = errors.New("invalid question kind")
 	ErrClaimNotFoundInJWT        = errors.New("claim not found in jwt")
+	ErrInvalidJWT                = errors.New("invalid jwt")
 )

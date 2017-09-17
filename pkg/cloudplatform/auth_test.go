@@ -57,6 +57,13 @@ func TestGenerateTokenStringParseJWT(t *testing.T) {
 		t.Errorf("actualErr: %v, expectErr: %v", err, expectErr)
 	}
 
+	badTokenFormat := "Bearer:Ezd1pQeMojmuqeOa4f3LwY"
+	badTokenFormatErr := ErrInvalidJWT
+	_, err = parseJWT(badTokenFormat, "sub")
+	if err != badTokenFormatErr {
+		t.Errorf("actualErr: %v, expectErr: %v", err, badTokenFormatErr)
+	}
+
 	_, err = generateTokenString(user)
 	if err != nil {
 		t.Errorf("err: %v", err)
