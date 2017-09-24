@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 
-<xmp theme="cyborg" style="display:none;">
+<xmp theme="simplex" style="display:none;">
 # Nettaton
 React frontend in progress, until then you can use curl like so:
 ```sh
@@ -16,6 +16,7 @@ This should get you a question that looks like a minified version of this:
 }
 ```
 This is asking for the last valid IP address in the network that 10.10.10.10/24 is in. Sometimes the question have prefix notation, sometimes subnet mask.
+
 The different types of question are:
 
 * First - first valid IP of network
@@ -23,6 +24,7 @@ The different types of question are:
 * Broadcast - broadcast IP of network
 * FirstAndLast - first and last valid IP addresses of network (e.g. 10.10.10.1-10.10.10.255)
 * HostsInNet - how many valid hosts there are in the network
+
 
 To answer, just post your "answer" to the endpoint, like so:
 ```sh
@@ -41,5 +43,5 @@ The response should look like this:
 If your userAnswer is the same as the actualAnswer, you got it right!
 </xmp>
 
-<script src="http://strapdownjs.com/v/0.2/strapdown.js"></script>
+<script src="https://cdn.rawgit.com/Naereen/StrapDown.js/master/strapdown.min.js"></script>
 </html>
