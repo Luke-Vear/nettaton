@@ -8,19 +8,17 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
+// Config ...
 type Config struct {
 	DB DB `json:"db" env:"db"`
-	QO QO `json:"qo" env:"qo"`
 }
 
+// DB ...
 type DB struct {
 	Table string `json:"table" env:"table"`
 }
 
-type QO struct {
-	Operation string `json:"operation" env:"operation"`
-}
-
+// loadConfig ...
 func LoadConfig() Config {
 	var config Config
 

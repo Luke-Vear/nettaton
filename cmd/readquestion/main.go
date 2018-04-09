@@ -9,7 +9,7 @@ func main() {
 	config := internal.LoadConfig()
 	resolver := internal.NewDependencyResolver(config)
 
-	question := resolver.ResolveQuestionOperation()
+	nettatonNexus := resolver.ResolveNettatonNexus()
 
-	lambda.Start(question)
+	lambda.Start(nettatonNexus.ReadQuestion)
 }

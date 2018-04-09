@@ -8,35 +8,30 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
 
+// DependencyResolver ...
 type DependencyResolver struct {
 	config Config
 }
 
+// NewDependencyResolver ...
 func NewDependencyResolver(config Config) *DependencyResolver {
 	return &DependencyResolver{
 		config: config,
 	}
 }
 
+// ResolveNettatonNexus ...
+func (r *DependencyResolver) ResolveNettatonNexus() *nettaton.Nexus {
+	return nettaton.NewNexus(r.ResolveGateway())
+}
+
+// ResolveGateway ...
 func (r *DependencyResolver) ResolveGateway() *state.Gateway {
 	return state.NewGateway(r.ResolveDB())
 }
 
+// ResolveDB ...
 func (r *DependencyResolver) ResolveDB() *store.DB {
 	dynamo := dynamodb.New(session.New())
-	return store.NewDB(r.config.DBConfig.Table, dynamo)
-}
-
-func (r *DependencyResolver) ResolveQuestionOperation() nettaton.QuestionOperation {
-
-	nettaton.SetStateGateway(r.ResolveGateway())
-
-	switch r.config.QO.Operation {
-	case "read":
-		return nettaton.ReadQuestion
-	case "answer":
-		return nettaton.AnswerQuestion
-	default:
-		return nettaton.CreateQuestion
-	}
+	return store.NewDB(r.config.DB.Table, dynamo)
 }

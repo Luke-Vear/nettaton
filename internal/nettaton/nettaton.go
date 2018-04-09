@@ -3,22 +3,26 @@ package nettaton
 import (
 	"fmt"
 
-	"github.com/Luke-Vear/nettaton/internal/state"
-
 	"github.com/Luke-Vear/nettaton/internal/platform"
 	"github.com/Luke-Vear/nettaton/internal/quiz"
+	"github.com/Luke-Vear/nettaton/internal/state"
 )
 
-var stateGateway *state.Gateway
-
-func SetStateGateway(sgw *state.Gateway) {
-	stateGateway = sgw
+// Nexus ...
+type Nexus struct {
+	sgw *state.Gateway
 }
 
-type QuestionOperation func(r *platform.Request) (*quiz.Question, error)
+// NewNexus ...
+func NewNexus(sgw *state.Gateway) *Nexus {
+	return &Nexus{
+		sgw: sgw,
+	}
+}
 
 // CreateQuestion ...
-func CreateQuestion(r *platform.Request) (*quiz.Question, error) {
+func (n *Nexus) CreateQuestion(r *platform.Request) (*quiz.Question, error) {
+
 	var kind string
 	if k, ok := r.QueryStringParameters["kind"]; ok {
 		if !quiz.ValidQuestionKind(k) {
@@ -29,7 +33,7 @@ func CreateQuestion(r *platform.Request) (*quiz.Question, error) {
 
 	q := quiz.NewQuestion("", "", kind)
 
-	err := stateGateway.UpdateQuestion(q)
+	err := n.sgw.UpdateQuestion(q)
 	if err != nil {
 		return nil, err
 	}
@@ -38,11 +42,11 @@ func CreateQuestion(r *platform.Request) (*quiz.Question, error) {
 }
 
 // ReadQuestion ...
-func ReadQuestion(r *platform.Request) (*quiz.Question, error) {
+func (n *Nexus) ReadQuestion(r *platform.Request) (*quiz.Question, error) {
 	return nil, nil
 }
 
 // AnswerQuestion ...
-func AnswerQuestion(r *platform.Request) (*quiz.Question, error) {
+func (n *Nexus) AnswerQuestion(r *platform.Request) (*quiz.Question, error) {
 	return nil, nil
 }

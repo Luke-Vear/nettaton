@@ -7,10 +7,18 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-// DB represents a physical datastore
+// DB represents a physical datastore.
 type DB struct {
 	dynamo *dynamodb.DynamoDB
 	table  string
+}
+
+// NewDB returns a instantiated DB.
+func NewDB(table string, dynamo *dynamodb.DynamoDB) *DB {
+	return &DB{
+		table:  table,
+		dynamo: dynamo,
+	}
 }
 
 // UpdateQuestion creates or overwrites a question in the database by primary key.
@@ -47,18 +55,10 @@ func (db *DB) GetQuestion(questionID string) (*quiz.Question, error) {
 		return nil, err
 	}
 
-	qq := &quiz.Question{}
+	var qq *quiz.Question
 	if err := dynamodbattribute.UnmarshalMap(result.Item, qq); err != nil {
 		return nil, err
 	}
 
 	return qq, nil
-}
-
-// NewDB returns a instantiated DB.
-func NewDB(table string, dynamo *dynamodb.DynamoDB) *DB {
-	return &DB{
-		table:  table,
-		dynamo: dynamo,
-	}
 }
