@@ -1,7 +1,8 @@
-package subnetquiz
+package quiz
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"regexp"
 	"strconv"
@@ -10,9 +11,11 @@ import (
 var (
 	// ErrInvalidNetwork unable to parse network.
 	ErrInvalidNetwork = errors.New("unable to parse network")
+	// ErrInvalidQuestionKind invalid question kind.
+	ErrInvalidQuestionKind = errors.New("invalid question kind")
 
-	// Questions maps a string name of a function to an actual function.
-	Questions = map[string]func(net.IP, uint) string{
+	// questions maps a string name of a function to an actual function.
+	questions = map[string]func(net.IP, uint) string{
 		"first":        First,
 		"last":         Last,
 		"broadcast":    Broadcast,
@@ -20,8 +23,8 @@ var (
 		"hostsinnet":   HostsInNet,
 	}
 
-	// Networks in netmask or CIDR notation in the range of /12 to /30.
-	Networks = []struct {
+	// networks in netmask or CIDR notation in the range of /12 to /30.
+	networks = []struct {
 		netmask string
 		prefix  string
 	}{
@@ -72,7 +75,7 @@ func toCidr(n string) (string, error) {
 	if match, _ := regexp.MatchString("^(1[2-9]|2[0-9]|30)$", n); match {
 		return n, nil
 	}
-	for _, v := range Networks {
+	for _, v := range networks {
 		if v.netmask == n {
 			return v.prefix, nil
 		}
@@ -132,4 +135,18 @@ func copyNIP(nip net.IP) net.IP {
 // hosts returns the amount of valid hosts in the subnet as an int.
 func hosts(cidr uint) int {
 	return 2<<(31-cidr) - 2
+}
+
+// ValidQuestionKind returns true if the kind is valid.
+func ValidQuestionKind(kind string) bool {
+	_, ok := questions[kind]
+	return ok
+}
+
+// AnswerFunc returns a question function based on the provided kind.
+func AnswerFunc(kind string) (func(net.IP, uint) string, error) {
+	if q, ok := questions[kind]; ok {
+		return q, nil
+	}
+	return nil, fmt.Errorf("%e: %s", ErrInvalidQuestionKind, kind)
 }

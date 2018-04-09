@@ -1,4 +1,4 @@
-package subnetquiz
+package quiz
 
 import (
 	"net"
@@ -491,6 +491,22 @@ func TestHosts(t *testing.T) {
 	for _, tc := range tt {
 		if actual := hosts(tc.input); actual != tc.expect {
 			t.Errorf("\nactual: %v\nexpected: %v\ncidr: %v", actual, tc.expect, tc.input)
+		}
+	}
+}
+
+func TestAnswerFuncValidQuestionKind(t *testing.T) {
+	_, err := AnswerFunc("not-a-question-kind")
+	if err == nil {
+		t.Error("should be error")
+	}
+
+	for k := range questions {
+		if ok := ValidQuestionKind(k); !ok {
+			t.Errorf("invalid question kind: %v", k)
+		}
+		if _, err := AnswerFunc(k); err != nil {
+			t.Errorf("invalid question: %v", k)
 		}
 	}
 }

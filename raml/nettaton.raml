@@ -4,16 +4,16 @@ title: Nettaton API
 baseUri: http://api.nettaton.com/{version}
 version: v1
 
-/subnet-questions:
+/questions:
   # Retrieve a new question.
   post:
     queryParameters: 
-          question-kind:
+          kind:
             type: string
             description: The kind of subnet question you want to retrieve.
             example: first
             required: false
-  /{question-id}:
+  /{id}:
     # Get or delete the question by id.
     get:
     /answer:
