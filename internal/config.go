@@ -1,11 +1,7 @@
 package internal
 
 import (
-	"encoding/json"
-	"fmt"
 	"os"
-
-	"github.com/kelseyhightower/envconfig"
 )
 
 // Config ...
@@ -18,29 +14,31 @@ type DB struct {
 	Table string `json:"table" env:"table"`
 }
 
-// loadConfig ...
+// LoadConfig ...
 func LoadConfig() Config {
 	var config Config
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
+	// cwd, err := os.Getwd()
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	file, err := os.Open(fmt.Sprintf("%s/config.json", cwd))
-	if err != nil {
-		panic(err)
-	}
+	// file, err := os.Open(fmt.Sprintf("%s/config.json", cwd))
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	err = json.NewDecoder(file).Decode(&config)
-	if err != nil {
-		panic(err)
-	}
+	// err = json.NewDecoder(file).Decode(&config)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	err = envconfig.Process("nettaton", &config)
-	if err != nil {
-		panic(err)
-	}
+	// err = envconfig.Process("nettaton", &config)
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	config.DB.Table = os.Getenv("NETTATON_TABLE")
 
 	return config
 }

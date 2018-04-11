@@ -2,9 +2,7 @@ package quiz
 
 import (
 	"errors"
-	"fmt"
 	"net"
-	"regexp"
 	"strconv"
 )
 
@@ -14,13 +12,13 @@ var (
 	// ErrInvalidQuestionKind invalid question kind.
 	ErrInvalidQuestionKind = errors.New("invalid question kind")
 
-	// questions maps a string name of a function to an actual function.
-	questions = map[string]func(net.IP, uint) string{
-		"first":        First,
-		"last":         Last,
-		"broadcast":    Broadcast,
-		"firstandlast": FirstAndLast,
-		"hostsinnet":   HostsInNet,
+	// solvers maps a question kind to the function that can solve it.
+	solvers = map[string]func(*answerer) string{
+		"first":        (*answerer).first,
+		"last":         (*answerer).last,
+		"broadcast":    (*answerer).broadcast,
+		"firstandlast": (*answerer).firstAndLast,
+		"hostsinnet":   (*answerer).hostsInNet,
 	}
 
 	// networks in netmask or CIDR notation in the range of /12 to /30.
@@ -28,13 +26,13 @@ var (
 		netmask string
 		prefix  string
 	}{
-		{netmask: "255.255.255.252", prefix: "30"}, // 2 valid hosts
+		{netmask: "255.255.255.252", prefix: "30"},
 		{netmask: "255.255.255.248", prefix: "29"},
 		{netmask: "255.255.255.240", prefix: "28"},
 		{netmask: "255.255.255.224", prefix: "27"},
 		{netmask: "255.255.255.192", prefix: "26"},
 		{netmask: "255.255.255.128", prefix: "25"},
-		{netmask: "255.255.255.0", prefix: "24"}, // 254 valid hosts
+		{netmask: "255.255.255.0", prefix: "24"},
 		{netmask: "255.255.254.0", prefix: "23"},
 		{netmask: "255.255.252.0", prefix: "22"},
 		{netmask: "255.255.248.0", prefix: "21"},
@@ -50,53 +48,54 @@ var (
 	}
 )
 
-// Parse parses an IP address and cidr/netmask into a network address and a cidr.
-func Parse(ip, network string) (net.IP, uint, error) {
+// answerer can answer questions about a subnet. It is created from a Question
+// by parsing the question data into a format that can be used for calculation.
+type answerer struct {
+	nip  net.IP
+	cidr uint
+}
+
+// newAnswerer parses an IP address and cidr/netmask into an answerer.
+func newAnswerer(q *Question) *answerer {
 
 	// Convert network string to subnet prefix length int.
-	cidrStr, err := toCidr(network)
-	if err != nil {
-		return nil, 0, err
-	}
+	cidrStr := toCidr(q.Network)
 	cidrInt, _ := strconv.Atoi(cidrStr)
 
 	// Convert the strings ip and network into the network ID as type net.IP.
-	_, nw, err := net.ParseCIDR(ip + "/" + cidrStr)
-	if err != nil {
-		return nil, 0, err
-	}
+	_, nw, _ := net.ParseCIDR(q.IP + "/" + cidrStr)
 
 	// return IPv4 IP and cidr as uint
-	return nw.IP.To4(), uint(cidrInt), nil
+	return &answerer{
+		nip:  nw.IP.To4(),
+		cidr: uint(cidrInt),
+	}
 }
 
-// toCidr returns the cidr if in correct range, or transforms netmask to cidr.
-func toCidr(n string) (string, error) {
-	if match, _ := regexp.MatchString("^(1[2-9]|2[0-9]|30)$", n); match {
-		return n, nil
-	}
+// toCidr transforms netmask to cidr, or returns the cidr if in correct range.
+func toCidr(n string) string {
 	for _, v := range networks {
 		if v.netmask == n {
-			return v.prefix, nil
+			return v.prefix
 		}
 	}
-	return "", ErrInvalidNetwork
+	return n
 }
 
-// First returns the first valid IP address in the range.
-func First(nip net.IP, cidr uint) string {
+// first returns the first valid IP address in the range.
+func (a *answerer) first() string {
 
-	cpnip := copyNIP(nip)
+	cpnip := copyNIP(a.nip)
 	cpnip[3]++
 
 	return cpnip.String()
 }
 
-// Last returns the last valid IP address in the range.
-func Last(nip net.IP, cidr uint) string {
+// last returns the last valid IP address in the range.
+func (a *answerer) last() string {
 
-	cpnip := copyNIP(nip)
-	hosts := hosts(cidr)
+	cpnip := copyNIP(a.nip)
+	hosts := hosts(a.cidr)
 
 	cpnip[0] = cpnip[0] + byte(hosts/(1<<24))
 	cpnip[1] = cpnip[1] + byte(hosts/(1<<16))
@@ -106,23 +105,23 @@ func Last(nip net.IP, cidr uint) string {
 	return cpnip.String()
 }
 
-// Broadcast returns the broadcast address.
-func Broadcast(nip net.IP, cidr uint) string {
+// broadcast returns the broadcast address.
+func (a *answerer) broadcast() string {
 
-	bc, _, _ := net.ParseCIDR(Last(nip, cidr) + "/" + strconv.Itoa(int(cidr)))
+	bc, _, _ := net.ParseCIDR(a.last() + "/" + strconv.Itoa(int(a.cidr)))
 	bc[len(bc)-1]++
 
 	return bc.String()
 }
 
-// FirstAndLast returns the first and last valid IP addresses in the range.
-func FirstAndLast(nip net.IP, cidr uint) string {
-	return First(nip, cidr) + "-" + Last(nip, cidr)
+// firstAndLast returns the first and last valid IP addresses in the range.
+func (a *answerer) firstAndLast() string {
+	return a.first() + "-" + a.last()
 }
 
-// HostsInNet returns how many valid hosts there are in the subnet.
-func HostsInNet(nip net.IP, cidr uint) string {
-	return strconv.Itoa(hosts(cidr))
+// hostsInNet returns how many valid hosts there are in the subnet.
+func (a *answerer) hostsInNet() string {
+	return strconv.Itoa(hosts(a.cidr))
 }
 
 // copyNIP returns a copy of the net.IP to prevent global state mutation.
@@ -139,14 +138,6 @@ func hosts(cidr uint) int {
 
 // ValidQuestionKind returns true if the kind is valid.
 func ValidQuestionKind(kind string) bool {
-	_, ok := questions[kind]
+	_, ok := solvers[kind]
 	return ok
-}
-
-// AnswerFunc returns a question function based on the provided kind.
-func AnswerFunc(kind string) (func(net.IP, uint) string, error) {
-	if q, ok := questions[kind]; ok {
-		return q, nil
-	}
-	return nil, fmt.Errorf("%e: %s", ErrInvalidQuestionKind, kind)
 }

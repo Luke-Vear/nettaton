@@ -4,7 +4,7 @@ title: Nettaton API
 baseUri: http://api.nettaton.com/{version}
 version: v1
 
-/questions:
+/question:
   # Retrieve a new question.
   post:
     queryParameters: 
@@ -14,7 +14,7 @@ version: v1
             example: first
             required: false
   /{id}:
-    # Get or delete the question by id.
+    # Get the question by id.
     get:
     /answer:
       # Answer question.

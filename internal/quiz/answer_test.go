@@ -2,10 +2,12 @@ package quiz
 
 import (
 	"net"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
+/*
 func TestParse(t *testing.T) {
 
 	tt := []struct {
@@ -387,24 +389,7 @@ func TestHostsInNet(t *testing.T) {
 
 }
 
-func TestCopyNIP(t *testing.T) {
-
-	ipToBeCopied, ipToBeCompared := net.IP{10, 10, 10, 10}, net.IP{10, 10, 10, 10}
-
-	// Copy IP and mutate original.
-	copiedIP := copyNIP(ipToBeCopied)
-	ipToBeCopied[len(ipToBeCopied)-1]++
-
-	if copiedIP.Equal(ipToBeCopied) {
-		t.Error("IP mutated, not copied")
-	}
-
-	if !copiedIP.Equal(ipToBeCompared) {
-		t.Error("IP not copied correctly")
-	}
-}
-
-func TestHosts(t *testing.T) {
+func TestAnswerer_Hosts(t *testing.T) {
 
 	tt := []struct {
 		input  uint
@@ -508,5 +493,45 @@ func TestAnswerFuncValidQuestionKind(t *testing.T) {
 		if _, err := AnswerFunc(k); err != nil {
 			t.Errorf("invalid question: %v", k)
 		}
+	}
+}
+*/
+func TestNewAnswerer(t *testing.T) {
+	a := newAnswerer(&Question{
+		ID:      "abc",
+		IP:      "10.0.0.0",
+		Network: "24",
+		Kind:    "first",
+	})
+
+	assert.NotNil(t, a)
+}
+
+func TestToCidr(t *testing.T) {
+	netmask := "255.240.0.0"
+	netmaskOut := toCidr(netmask)
+
+	assert.Equal(t, "12", netmaskOut)
+
+	cidr := "12"
+	cidrOut := toCidr(cidr)
+
+	assert.Equal(t, "12", cidrOut)
+}
+
+func TestCopyNIP(t *testing.T) {
+
+	ipToBeCopied, ipToBeCompared := net.IP{10, 10, 10, 10}, net.IP{10, 10, 10, 10}
+
+	// Copy IP and mutate original.
+	copiedIP := copyNIP(ipToBeCopied)
+	ipToBeCopied[len(ipToBeCopied)-1]++
+
+	if copiedIP.Equal(ipToBeCopied) {
+		t.Error("IP mutated, not copied")
+	}
+
+	if !copiedIP.Equal(ipToBeCompared) {
+		t.Error("IP not copied correctly")
 	}
 }

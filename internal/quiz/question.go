@@ -18,7 +18,7 @@ func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }
 
-// Question ...
+// Question represents a subnet question.
 type Question struct {
 	ID      string `json:"id"`
 	IP      string `json:"ip"`
@@ -26,7 +26,8 @@ type Question struct {
 	Kind    string `json:"kind"`
 }
 
-// NewQuestion ...
+// NewQuestion returns a new randomly generated question struct.
+// The fields can be overwritten by parameters.
 func NewQuestion(ip, network, kind string) *Question {
 	q := &Question{
 		ID:      uuid.New().String(),
@@ -46,6 +47,13 @@ func NewQuestion(ip, network, kind string) *Question {
 	return q
 }
 
+// Solution looks up the function required to provide the solution based upon
+// the question kind, transforms the question into a solvable format and solves.
+func (q *Question) Solution() string {
+	a := newAnswerer(q)
+	return solvers[q.Kind](a)
+}
+
 // randomIP returns a random private IP as a string.
 func randomIP() string {
 	switch r(3) {
@@ -62,33 +70,48 @@ func randomIP() string {
 
 }
 
-func addressInRange(fo, sos, sof int) string {
-	so := 0
-	if sos != sof {
-		so = r(sof - sos)
+// addressInRange returns an address in the required range.
+// oct1 = first octet
+// oct2 = second octet
+// oct2s = second octet start
+// oct2f = second octet finish
+func addressInRange(oct1, oct2s, oct2f int) string {
+	oct2 := 0
+	if oct2s != oct2f {
+		oct2 = r(oct2f - oct2s)
 	}
-	so += sos
+	oct2 += oct2s
 
-	return s(fo) + "." + s(so) + "." + s(r(253)+1) + "." + s(r(253)+1)
+	o1 := s(oct1)
+	o2 := s(oct2)
+	o3 := s(r(253) + 1)
+	o4 := s(r(253) + 1)
+
+	return o1 + "." + o2 + "." + o3 + "." + o4
 }
 
 // randomNetwork returns a network in netmask or CIDR notation in the range
 // of /12 to /30.
 func randomNetwork() string {
+	ln := len(solvers)
+	rn := r(ln)
+	net := networks[rn]
+
 	switch r(2) {
 	case 0:
-		return networks[r(len(networks))].netmask
+		return net.netmask
 	}
-	return networks[r(len(networks))].prefix
+	return net.prefix
 }
 
 // randomQuestionKind returns a kind of subnetting question.
 func randomQuestionKind() string {
-
-	var qk []string
-	for key := range questions {
-		qk = append(qk, key)
+	var qks []string
+	for key := range solvers {
+		qks = append(qks, key)
 	}
 
-	return qk[r(len(questions))]
+	ls := len(solvers)
+	rn := r(ls)
+	return qks[rn]
 }
