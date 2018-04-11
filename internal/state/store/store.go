@@ -43,7 +43,7 @@ func (db *DB) GetQuestion(questionID string) (*quiz.Question, error) {
 	}
 
 	var qq *quiz.Question
-	if err := dynamodbattribute.UnmarshalMap(result.Item, qq); err != nil {
+	if err := dynamodbattribute.UnmarshalMap(result.Item, &qq); err != nil {
 		return nil, err
 	}
 

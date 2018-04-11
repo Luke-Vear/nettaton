@@ -1,7 +1,9 @@
 package platform
 
 import (
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 )
@@ -16,8 +18,8 @@ type (
 // NewResponse returns a properly formatted Response.
 func NewResponse(statusCode int, body string, err error) (*Response, error) {
 	if err != nil {
-		// TODO: Log error.
-		body = http.StatusText(http.StatusInternalServerError)
+		log.New(os.Stderr, "ERROR: ", log.Llongfile).Println(body)
+		body = http.StatusText(statusCode)
 	}
 	return &Response{
 		Headers:    map[string]string{"Content-Type": "application/json"},
