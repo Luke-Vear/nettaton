@@ -5,7 +5,8 @@ baseUri: http://api.nettaton.com/{version}
 version: v1
 
 /question:
-  # Retrieve a new question.
+  # Create a new question, this question will be stored server side.
+  # The question expires after a few hours.
   post:
     queryParameters: 
           kind:
@@ -14,8 +15,9 @@ version: v1
             example: first
             required: false
   /{id}:
-    # Get the question by id.
+    # Read the question by id.
     get:
     /answer:
-      # Answer question by id.
+      # Answer question by id. If answered successfully this deletes the 
+      # question from the database.
       post:
