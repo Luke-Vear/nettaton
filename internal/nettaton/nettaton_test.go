@@ -1,5 +1,78 @@
 package nettaton
 
+import (
+	"encoding/json"
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+
+	pf "github.com/Luke-Vear/nettaton/internal/platform"
+	"github.com/Luke-Vear/nettaton/internal/quiz"
+	"github.com/Luke-Vear/nettaton/internal/state"
+)
+
+var (
+	storeOK   = happyStore{}
+	gatewayOK = state.NewGateway(storeOK)
+	nexusOK   = NewNexus(gatewayOK)
+
+	storeNotOK   = unhappyStore{}
+	gatewayNotOK = state.NewGateway(storeNotOK)
+	nexusNotOK   = NewNexus(gatewayNotOK)
+)
+
+type happyStore struct{}
+
+func (d happyStore) GetQuestion(string) (*quiz.Question, error) { return nil, nil }
+func (d happyStore) UpdateQuestion(*quiz.Question) error        { return nil }
+func (d happyStore) DeleteQuestion(questionID string) error     { return nil }
+
+type unhappyStore struct{}
+
+func (d unhappyStore) GetQuestion(string) (*quiz.Question, error) {
+	return nil, errors.New("update question failed")
+}
+func (d unhappyStore) UpdateQuestion(*quiz.Question) error {
+	return errors.New("update question failed")
+}
+func (d unhappyStore) DeleteQuestion(questionID string) error {
+	return errors.New("update question failed")
+}
+
+func TestNexus_CreateQuestion(t *testing.T) {
+	goodRequest := &pf.Request{
+		QueryStringParameters: map[string]string{
+			"kind": "first",
+		},
+	}
+
+	badRequest := &pf.Request{
+		QueryStringParameters: map[string]string{
+			"kind": "foo",
+		},
+	}
+
+	responseOK, _ := nexusOK.CreateQuestion(goodRequest)
+	assert.Equal(t, 201, responseOK.StatusCode)
+
+	var question quiz.Question
+	json.Unmarshal([]byte(responseOK.Body), &question)
+	assert.Equal(t, "first", question.Kind)
+
+	responseBadRequestOK, _ := nexusOK.CreateQuestion(badRequest)
+	assert.Equal(t, 400, responseBadRequestOK.StatusCode)
+
+	responseNotOK, _ := nexusNotOK.CreateQuestion(goodRequest)
+	assert.Equal(t, 500, responseNotOK.StatusCode)
+}
+
+func TestNexus_ReadQuestion(t *testing.T) {}
+
+func TestNexus_AnswerQuestion(t *testing.T) {
+
+}
+
 var proxyEvent = `
 {
 	"body": "{\"test\":\"body\"}",

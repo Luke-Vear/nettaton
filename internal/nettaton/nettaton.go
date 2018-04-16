@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	ErrLenIdZero = fmt.Errorf("length of id path parameter is zero")
+	ErrLenIdZero           = fmt.Errorf("length of id path parameter is zero")
+	ErrInvalidQuestionKind = fmt.Errorf("question kind is invalid")
 )
 
 // Nexus ...
@@ -31,7 +32,8 @@ func (n *Nexus) CreateQuestion(r *pf.Request) (*pf.Response, error) {
 	var kind string
 	if k, ok := r.QueryStringParameters["kind"]; ok {
 		if !quiz.ValidQuestionKind(k) {
-			return pf.NewResponse(http.StatusBadRequest, "kind invalid", nil)
+			err := fmt.Errorf("%s: %s", ErrInvalidQuestionKind.Error(), k)
+			return pf.NewResponse(http.StatusBadRequest, "", err)
 		}
 		kind = k
 	}
@@ -39,7 +41,7 @@ func (n *Nexus) CreateQuestion(r *pf.Request) (*pf.Response, error) {
 
 	err := n.sgw.UpdateQuestion(q)
 	if err != nil {
-		return pf.NewResponse(http.StatusInternalServerError, err.Error(), err)
+		return pf.NewResponse(http.StatusInternalServerError, "", err)
 	}
 
 	body, _ := json.Marshal(q)
@@ -50,15 +52,16 @@ func (n *Nexus) CreateQuestion(r *pf.Request) (*pf.Response, error) {
 func (n *Nexus) ReadQuestion(r *pf.Request) (*pf.Response, error) {
 	id, _ := r.PathParameters["id"]
 	if len(id) == 0 {
-		return pf.NewResponse(http.StatusBadRequest, ErrLenIdZero.Error(), ErrLenIdZero)
+		return pf.NewResponse(http.StatusBadRequest, "", ErrLenIdZero)
 	}
 
 	q, err := n.sgw.GetQuestion(id)
 	switch {
 	case err == state.ErrQuestionNotFound:
-		return pf.NewResponse(http.StatusNotFound, id+" not found", err)
+		errNotFound := fmt.Errorf("%s: %s", err.Error(), id)
+		return pf.NewResponse(http.StatusNotFound, "", errNotFound)
 	case err != nil:
-		return pf.NewResponse(http.StatusInternalServerError, err.Error(), err)
+		return pf.NewResponse(http.StatusInternalServerError, "", err)
 	}
 
 	body, _ := json.Marshal(q)
@@ -69,22 +72,23 @@ func (n *Nexus) ReadQuestion(r *pf.Request) (*pf.Response, error) {
 func (n *Nexus) AnswerQuestion(r *pf.Request) (*pf.Response, error) {
 	id, _ := r.PathParameters["id"]
 	if len(id) == 0 {
-		return pf.NewResponse(http.StatusBadRequest, ErrLenIdZero.Error(), ErrLenIdZero)
+		return pf.NewResponse(http.StatusBadRequest, "", ErrLenIdZero)
 	}
 
 	proffered := &struct {
 		Answer string `json:"answer"`
 	}{}
 	if err := json.Unmarshal([]byte(r.Body), &proffered); err != nil {
-		return pf.NewResponse(http.StatusBadRequest, "malformed request body", err)
+		return pf.NewResponse(http.StatusBadRequest, "", err)
 	}
 
 	q, err := n.sgw.GetQuestion(id)
 	switch {
 	case err == state.ErrQuestionNotFound:
-		return pf.NewResponse(http.StatusNotFound, id+" not found", err)
+		errNotFound := fmt.Errorf("%s: %s", err.Error(), id)
+		return pf.NewResponse(http.StatusNotFound, "", errNotFound)
 	case err != nil:
-		return pf.NewResponse(http.StatusInternalServerError, err.Error(), err)
+		return pf.NewResponse(http.StatusInternalServerError, "", err)
 	}
 
 	var correct bool
