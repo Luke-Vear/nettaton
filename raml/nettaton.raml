@@ -1,23 +1,74 @@
 #%RAML 1.0
 ---
 title: Nettaton API
-baseUri: http://api.nettaton.com/{version}
-version: v1
+baseUri: http://api.nettaton.com/
 
 /question:
-  # Create a new question, this question will be stored server side.
-  # The question expires after a few hours.
   post:
+    description: Create a new question, this question will be stored server side. The question expires after a few hours.
     queryParameters: 
           kind:
             type: string
             description: The kind of subnet question you want to retrieve.
             example: first
             required: false
+    responses:
+      201:
+        body:
+          application/json:
+            example: |
+              {
+                "id": "724998b3-f081-49ce-974a-30377b882dc0",
+                "ip": "192.168.164.153",
+                "network": "24",
+                "kind": "last",
+                "ttl": 1523925698
+              }
   /{id}:
-    # Read the question by id.
     get:
+      description: Read the question by id.
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                {
+                  "id": "724998b3-f081-49ce-974a-30377b882dc0",
+                  "ip": "192.168.164.153",
+                  "network": "24",
+                  "kind": "last",
+                  "ttl": 1523925698
+                }
     /answer:
-      # Answer question by id. If answered successfully this deletes the 
-      # question from the database.
       post:
+        body: 
+          application/json:
+            type: answer
+            example: |
+              {
+                "answer": "192.168.164.254"
+              } 
+        description: Answer question by id. If answered successfully this deletes the question from the database.
+        responses:
+          200:
+            body:
+              application/json:
+                example: |
+                  {
+                    "correct": true
+                  }
+
+types:
+  answer: |
+    {
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-03/schema",
+      "id": "http://jsonschema.net",
+      "required": true,
+      "properties": {
+        "answer": {
+          "type": "string",
+          "required": true
+        }
+      }
+    }
