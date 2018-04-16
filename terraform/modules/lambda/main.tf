@@ -4,9 +4,10 @@ resource "aws_lambda_function" "go_func" {
   function_name = "${var.name}-${var.env}-${var.app}"
   runtime       = "go1.x"
 
-  s3_bucket = "${var.artefact_bucket}"
-  s3_key    = "${var.app}/handler.zip"
-  handler   = "handler"
+  s3_bucket        = "${var.artefact_bucket}"
+  s3_key           = "${var.app}/handler.zip"
+  source_code_hash = "${base64sha256(file("${var.artefact_dir}/handler.zip"))}"
+  handler          = "handler"
 
   role = "${var.lambda_role_arn}"
 

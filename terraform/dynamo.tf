@@ -8,4 +8,9 @@ resource "aws_dynamodb_table" "questionstore" {
     name = "id"
     type = "S"
   }
+
+  ttl {
+    attribute_name = "ttl"
+    enabled        = true
+  }
 }

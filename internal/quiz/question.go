@@ -24,6 +24,7 @@ type Question struct {
 	IP      string `json:"ip"`
 	Network string `json:"network"`
 	Kind    string `json:"kind"`
+	TTL     int64  `json:"ttl"`
 }
 
 // NewQuestion returns a new randomly generated question struct.
@@ -34,6 +35,7 @@ func NewQuestion(ip, network, kind string) *Question {
 		IP:      randomIP(),
 		Network: randomNetwork(),
 		Kind:    randomQuestionKind(),
+		TTL:     time.Now().Add(time.Hour * 8).Unix(),
 	}
 	if len(ip) > 0 {
 		q.IP = ip

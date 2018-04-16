@@ -1,3 +1,7 @@
 .old
 .terraform
 *.zip
+
+dev.tfvars
+prod.tfvars
+*.tfstate

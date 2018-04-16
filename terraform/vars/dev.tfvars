@@ -1,9 +1,3 @@
-name = "nettaton"
-
 env = "dev"
 
-region = "eu-west-1"
-
-cmd_path = "../cmd"
-
-db_capacity = 3
+r53_zone_id = "ZYJ1F75JP3JG"

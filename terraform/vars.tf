@@ -1,11 +1,23 @@
 # general
-variable "name" {}
+variable "name" {
+  default = "nettaton"
+}
 
 variable "env" {}
 
-variable "region" {}
+variable "region" {
+  default = "eu-west-1"
+}
 
-variable "cmd_path" {}
+variable "cmd_path" {
+  default = "../cmd"
+}
 
 # dynamo
-variable "db_capacity" {}
+variable "db_capacity" {
+  default = 3
+}
+
+# r53
+
+variable "r53_zone_id" {}
