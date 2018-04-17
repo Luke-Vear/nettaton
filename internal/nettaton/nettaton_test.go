@@ -13,67 +13,7 @@ import (
 )
 
 var (
-	storeOK   = happyStore{}
-	gatewayOK = state.NewGateway(storeOK)
-	nexusOK   = NewNexus(gatewayOK)
-
-	storeNotOK   = unhappyStore{}
-	gatewayNotOK = state.NewGateway(storeNotOK)
-	nexusNotOK   = NewNexus(gatewayNotOK)
-)
-
-type happyStore struct{}
-
-func (d happyStore) GetQuestion(string) (*quiz.Question, error) { return nil, nil }
-func (d happyStore) UpdateQuestion(*quiz.Question) error        { return nil }
-func (d happyStore) DeleteQuestion(questionID string) error     { return nil }
-
-type unhappyStore struct{}
-
-func (d unhappyStore) GetQuestion(string) (*quiz.Question, error) {
-	return nil, errors.New("update question failed")
-}
-func (d unhappyStore) UpdateQuestion(*quiz.Question) error {
-	return errors.New("update question failed")
-}
-func (d unhappyStore) DeleteQuestion(questionID string) error {
-	return errors.New("update question failed")
-}
-
-func TestNexus_CreateQuestion(t *testing.T) {
-	goodRequest := &pf.Request{
-		QueryStringParameters: map[string]string{
-			"kind": "first",
-		},
-	}
-
-	badRequest := &pf.Request{
-		QueryStringParameters: map[string]string{
-			"kind": "foo",
-		},
-	}
-
-	responseOK, _ := nexusOK.CreateQuestion(goodRequest)
-	assert.Equal(t, 201, responseOK.StatusCode)
-
-	var question quiz.Question
-	json.Unmarshal([]byte(responseOK.Body), &question)
-	assert.Equal(t, "first", question.Kind)
-
-	responseBadRequestOK, _ := nexusOK.CreateQuestion(badRequest)
-	assert.Equal(t, 400, responseBadRequestOK.StatusCode)
-
-	responseNotOK, _ := nexusNotOK.CreateQuestion(goodRequest)
-	assert.Equal(t, 500, responseNotOK.StatusCode)
-}
-
-func TestNexus_ReadQuestion(t *testing.T) {}
-
-func TestNexus_AnswerQuestion(t *testing.T) {
-
-}
-
-var proxyEvent = `
+	proxyEvent = `
 {
 	"body": "{\"test\":\"body\"}",
 	"resource": "/{proxy+}",
@@ -132,3 +72,136 @@ var proxyEvent = `
 	"path": "/path/to/resource"
 }
 `
+
+	storeOK   = happyStore{}
+	gatewayOK = state.NewGateway(storeOK)
+	nexusOK   = NewNexus(gatewayOK)
+
+	storeNotOK   = unhappyStore{}
+	gatewayNotOK = state.NewGateway(storeNotOK)
+	nexusNotOK   = NewNexus(gatewayNotOK)
+
+	storeNotFound   = notFoundStore{}
+	gatewayNotFound = state.NewGateway(storeNotFound)
+	nexusNotFound   = NewNexus(gatewayNotFound)
+)
+
+type happyStore struct{}
+
+func (d happyStore) GetQuestion(string) (*quiz.Question, error) {
+	return &quiz.Question{
+		ID:      "abc",
+		IP:      "10.0.0.0",
+		Kind:    "hostsinnet",
+		Network: "24",
+		TTL:     99999999999,
+	}, nil
+}
+func (d happyStore) UpdateQuestion(*quiz.Question) error    { return nil }
+func (d happyStore) DeleteQuestion(questionID string) error { return nil }
+
+type unhappyStore struct{}
+
+func (d unhappyStore) GetQuestion(string) (*quiz.Question, error) {
+	return nil, errors.New("update question failed")
+}
+func (d unhappyStore) UpdateQuestion(*quiz.Question) error {
+	return errors.New("update question failed")
+}
+func (d unhappyStore) DeleteQuestion(questionID string) error {
+	return errors.New("update question failed")
+}
+
+type notFoundStore struct{}
+
+func (d notFoundStore) GetQuestion(string) (*quiz.Question, error) {
+	return nil, state.ErrQuestionNotFound
+}
+func (d notFoundStore) UpdateQuestion(*quiz.Question) error {
+	return state.ErrQuestionNotFound
+}
+func (d notFoundStore) DeleteQuestion(questionID string) error {
+	return state.ErrQuestionNotFound
+}
+
+//
+func TestNexus_CreateQuestion(t *testing.T) {
+	goodRequest := &pf.Request{
+		QueryStringParameters: map[string]string{
+			"kind": "first",
+		},
+	}
+
+	badRequest := &pf.Request{
+		QueryStringParameters: map[string]string{
+			"kind": "foo",
+		},
+	}
+
+	responseOK, _ := nexusOK.CreateQuestion(goodRequest)
+	assert.Equal(t, 201, responseOK.StatusCode)
+
+	var question quiz.Question
+	json.Unmarshal([]byte(responseOK.Body), &question)
+	assert.Equal(t, "first", question.Kind)
+
+	responseBadKind, _ := nexusOK.CreateQuestion(badRequest)
+	assert.Equal(t, 400, responseBadKind.StatusCode)
+
+	responseNotOK, _ := nexusNotOK.CreateQuestion(goodRequest)
+	assert.Equal(t, 500, responseNotOK.StatusCode)
+}
+
+func TestNexus_ReadQuestion(t *testing.T) {
+	goodRequest := &pf.Request{
+		PathParameters: map[string]string{
+			"id": "abc",
+		},
+	}
+
+	badRequest := &pf.Request{}
+
+	responseOK, _ := nexusOK.ReadQuestion(goodRequest)
+	assert.Equal(t, 200, responseOK.StatusCode)
+
+	responseBadID, _ := nexusOK.ReadQuestion(badRequest)
+	assert.Equal(t, 400, responseBadID.StatusCode)
+
+	responseNotFound, _ := nexusNotFound.ReadQuestion(goodRequest)
+	assert.Equal(t, 404, responseNotFound.StatusCode)
+
+	responseNotOK, _ := nexusNotOK.ReadQuestion(goodRequest)
+	assert.Equal(t, 500, responseNotOK.StatusCode)
+}
+
+func TestNexus_AnswerQuestion(t *testing.T) {
+	goodRequest := &pf.Request{
+		PathParameters: map[string]string{
+			"id": "abc",
+		},
+		Body: `{ "answer": "254" }`,
+	}
+
+	badIDRequest := &pf.Request{}
+
+	badBodyRequest := &pf.Request{
+		PathParameters: map[string]string{
+			"id": "abc",
+		},
+	}
+
+	responseOK, _ := nexusOK.AnswerQuestion(goodRequest)
+	assert.Equal(t, 200, responseOK.StatusCode)
+
+	responseBadID, _ := nexusOK.AnswerQuestion(badIDRequest)
+	assert.Equal(t, 400, responseBadID.StatusCode)
+
+	responseBadBody, _ := nexusOK.AnswerQuestion(badBodyRequest)
+	assert.Equal(t, 400, responseBadBody.StatusCode)
+
+	responseNotFound, _ := nexusNotFound.AnswerQuestion(goodRequest)
+	assert.Equal(t, 404, responseNotFound.StatusCode)
+
+	responseNotOK, _ := nexusNotOK.AnswerQuestion(goodRequest)
+	assert.Equal(t, 500, responseNotOK.StatusCode)
+}

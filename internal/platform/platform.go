@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -17,7 +18,13 @@ type (
 func NewResponse(statusCode int, body string, err error) (*Response, error) {
 	if err != nil {
 		// TODO: log the err
-		body = http.StatusText(statusCode)
+		// TODO: pretty error responses
+		errJSON, _ := json.Marshal(struct {
+			Error string `json:"error"`
+		}{
+			Error: http.StatusText(statusCode),
+		})
+		body = string(errJSON)
 	}
 	return &Response{
 		Headers:    map[string]string{"Content-Type": "application/json"},
