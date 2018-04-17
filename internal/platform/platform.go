@@ -18,7 +18,6 @@ type (
 func NewResponse(statusCode int, body string, err error) (*Response, error) {
 	if err != nil {
 		// TODO: log the err
-		// TODO: pretty error responses
 		errJSON, _ := json.Marshal(struct {
 			Error string `json:"error"`
 		}{

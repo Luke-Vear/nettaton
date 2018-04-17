@@ -73,6 +73,8 @@ terraform apply \
   --var-file="./vars/${ENVIRONMENT}.tfvars" \
   -auto-approve
 
+rm -rf .terraform
+
 cd - >/dev/null
 
 echo "---- ---- ---- ----"
