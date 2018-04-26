@@ -1,0 +1,28 @@
+{
+  "Input": {
+    "IP": "10.0.0.0",
+    "Network": "24"
+  },
+  "Outputs": [
+    {
+      "Kind": "broadcast",
+      "Solution": "10.0.0.255"
+    },
+    {
+      "Kind": "first",
+      "Solution": "10.0.0.1"
+    },
+    {
+      "Kind": "firstandlast",
+      "Solution": "10.0.0.1-10.0.0.254"
+    },
+    {
+      "Kind": "hostsinnet",
+      "Solution": "254"
+    },
+    {
+      "Kind": "last",
+      "Solution": "10.0.0.254"
+    }
+  ]
+}
