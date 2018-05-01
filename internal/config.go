@@ -4,41 +4,25 @@ import (
 	"os"
 )
 
-// Config ...
+// Config stores all the config information for the app.
 type Config struct {
 	DB DB `json:"db" env:"db"`
 }
 
-// DB ...
+// DB has all the config info for the database.
 type DB struct {
 	Table string `json:"table" env:"table"`
 }
 
-// LoadConfig ...
+// LoadConfig loads the config into the config object.
 func LoadConfig() Config {
 	var config Config
 
-	// cwd, err := os.Getwd()
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// file, err := os.Open(fmt.Sprintf("%s/config.json", cwd))
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// err = json.NewDecoder(file).Decode(&config)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// err = envconfig.Process("nettaton", &config)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	config.DB.Table = os.Getenv("NETTATON_TABLE")
+	table := os.Getenv("NETTATON_TABLE")
+	if len(table) == 0 {
+		panic("NETTATON_TABLE not set.")
+	}
+	config.DB.Table = table
 
 	return config
 }
