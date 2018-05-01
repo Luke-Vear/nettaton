@@ -26,7 +26,7 @@ func NewResponse(statusCode int, body string, err error) (*Response, error) {
 		body = string(errJSON)
 	}
 	return &Response{
-		Headers:    map[string]string{"Content-Type": "application/json"},
+		Headers:    map[string]string{"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
 		StatusCode: statusCode,
 		Body:       body,
 	}, nil
