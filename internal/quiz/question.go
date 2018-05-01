@@ -59,7 +59,6 @@ func (q *Question) Solution() string {
 // randomIP returns a random private IP as a string.
 func randomIP() string {
 	switch r(3) {
-
 	case 0: // In range 10.0.0.0/8
 		return addressInRange(10, 0, 255)
 
@@ -69,7 +68,6 @@ func randomIP() string {
 	default: // In range 192.168.0.0/16
 		return addressInRange(192, 168, 168)
 	}
-
 }
 
 // addressInRange returns an address in the required range.

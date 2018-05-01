@@ -1,20 +1,20 @@
 {
   "Input": {
-    "IP": "10.10.10.10",
+    "IP": "192.168.123.123",
     "Network": "255.255.255.252"
   },
   "Outputs": [
     {
       "Kind": "broadcast",
-      "Solution": "10.10.10.11"
+      "Solution": "192.168.123.123"
     },
     {
       "Kind": "first",
-      "Solution": "10.10.10.9"
+      "Solution": "192.168.123.121"
     },
     {
       "Kind": "firstandlast",
-      "Solution": "10.10.10.9-10.10.10.10"
+      "Solution": "192.168.123.121-192.168.123.122"
     },
     {
       "Kind": "hostsinnet",
@@ -22,7 +22,7 @@
     },
     {
       "Kind": "last",
-      "Solution": "10.10.10.10"
+      "Solution": "192.168.123.122"
     }
   ]
 }

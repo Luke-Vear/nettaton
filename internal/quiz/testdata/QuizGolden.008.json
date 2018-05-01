@@ -1,0 +1,28 @@
+{
+  "Input": {
+    "IP": "192.168.123.123",
+    "Network": "255.255.255.0"
+  },
+  "Outputs": [
+    {
+      "Kind": "broadcast",
+      "Solution": "192.168.123.255"
+    },
+    {
+      "Kind": "first",
+      "Solution": "192.168.123.1"
+    },
+    {
+      "Kind": "firstandlast",
+      "Solution": "192.168.123.1-192.168.123.254"
+    },
+    {
+      "Kind": "hostsinnet",
+      "Solution": "254"
+    },
+    {
+      "Kind": "last",
+      "Solution": "192.168.123.254"
+    }
+  ]
+}

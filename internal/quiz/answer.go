@@ -57,7 +57,6 @@ type answerer struct {
 
 // newAnswerer parses an IP address and cidr/netmask into an answerer.
 func newAnswerer(q *Question) *answerer {
-
 	// Convert network string to subnet prefix length int.
 	cidrStr := toCidr(q.Network)
 	cidrInt, _ := strconv.Atoi(cidrStr)
@@ -84,7 +83,6 @@ func toCidr(n string) string {
 
 // first returns the first valid IP address in the range.
 func (a *answerer) first() string {
-
 	cpnip := copyNIP(a.nip)
 	cpnip[3]++
 
@@ -93,7 +91,6 @@ func (a *answerer) first() string {
 
 // last returns the last valid IP address in the range.
 func (a *answerer) last() string {
-
 	cpnip := copyNIP(a.nip)
 	hosts := hosts(a.cidr)
 
@@ -107,7 +104,6 @@ func (a *answerer) last() string {
 
 // broadcast returns the broadcast address.
 func (a *answerer) broadcast() string {
-
 	bc, _, _ := net.ParseCIDR(a.last() + "/" + strconv.Itoa(int(a.cidr)))
 	bc[len(bc)-1]++
 
