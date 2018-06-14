@@ -28,16 +28,16 @@ func NewStore(table string, dynamo *dynamodb.DynamoDB) *Store {
 }
 
 // GetQuestion retrieves a question in the database by primary key.
-func (ss *Store) GetQuestion(questionID string) (*quiz.Question, error) {
+func (ds *Store) GetQuestion(questionID string) (*quiz.Question, error) {
 
 	query := &dynamodb.GetItemInput{
-		TableName: aws.String(ss.table),
+		TableName: aws.String(ds.table),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {S: aws.String(questionID)},
 		},
 	}
 
-	result, err := ss.dynamo.GetItem(query)
+	result, err := ds.dynamo.GetItem(query)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (ss *Store) GetQuestion(questionID string) (*quiz.Question, error) {
 }
 
 // UpdateQuestion creates or overwrites a question in the database by primary key.
-func (ss *Store) UpdateQuestion(qq *quiz.Question) error {
+func (ds *Store) UpdateQuestion(qq *quiz.Question) error {
 
 	avm, err := dynamodbattribute.MarshalMap(qq)
 	if err != nil {
@@ -63,27 +63,27 @@ func (ss *Store) UpdateQuestion(qq *quiz.Question) error {
 	}
 
 	pii := &dynamodb.PutItemInput{
-		TableName: aws.String(ss.table),
+		TableName: aws.String(ds.table),
 		Item:      avm,
 	}
 
-	if _, err := ss.dynamo.PutItem(pii); err != nil {
+	if _, err := ds.dynamo.PutItem(pii); err != nil {
 		return err
 	}
 	return nil
 }
 
 // DeleteQuestion deletes a question in the database by primary key.
-func (ss *Store) DeleteQuestion(questionID string) error {
+func (ds *Store) DeleteQuestion(questionID string) error {
 
 	query := &dynamodb.DeleteItemInput{
-		TableName: aws.String(ss.table),
+		TableName: aws.String(ds.table),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {S: aws.String(questionID)},
 		},
 	}
 
-	_, err := ss.dynamo.DeleteItem(query)
+	_, err := ds.dynamo.DeleteItem(query)
 	if err != nil {
 		return err
 	}
