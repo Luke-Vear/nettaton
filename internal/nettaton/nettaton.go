@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/Luke-Vear/nettaton/internal/data"
 	pf "github.com/Luke-Vear/nettaton/internal/platform"
 	"github.com/Luke-Vear/nettaton/internal/quiz"
-	"github.com/Luke-Vear/nettaton/internal/state"
 )
 
 var (
@@ -17,13 +17,20 @@ var (
 
 // Nexus ...
 type Nexus struct {
-	sgw *state.Gateway
+	ds datastore
+}
+
+// datastore ...
+type datastore interface {
+	GetQuestion(string) (*quiz.Question, error)
+	UpdateQuestion(*quiz.Question) error
+	DeleteQuestion(questionID string) error
 }
 
 // NewNexus ...
-func NewNexus(sgw *state.Gateway) *Nexus {
+func NewNexus(ds datastore) *Nexus {
 	return &Nexus{
-		sgw: sgw,
+		ds: ds,
 	}
 }
 
@@ -39,7 +46,7 @@ func (n *Nexus) CreateQuestion(r *pf.Request) (*pf.Response, error) {
 	}
 	q := quiz.NewQuestion("", "", kind)
 
-	err := n.sgw.UpdateQuestion(q)
+	err := n.ds.UpdateQuestion(q)
 	if err != nil {
 		return pf.NewResponse(http.StatusInternalServerError, "", err)
 	}
@@ -55,9 +62,9 @@ func (n *Nexus) ReadQuestion(r *pf.Request) (*pf.Response, error) {
 		return pf.NewResponse(http.StatusBadRequest, "", ErrLenIdZero)
 	}
 
-	q, err := n.sgw.GetQuestion(id)
+	q, err := n.ds.GetQuestion(id)
 	switch {
-	case err == state.ErrQuestionNotFound:
+	case err == data.ErrQuestionNotFound:
 		errNotFound := fmt.Errorf("%s: %s", err.Error(), id)
 		return pf.NewResponse(http.StatusNotFound, "", errNotFound)
 	case err != nil:
@@ -82,9 +89,9 @@ func (n *Nexus) AnswerQuestion(r *pf.Request) (*pf.Response, error) {
 		return pf.NewResponse(http.StatusBadRequest, "", err)
 	}
 
-	q, err := n.sgw.GetQuestion(id)
+	q, err := n.ds.GetQuestion(id)
 	switch {
-	case err == state.ErrQuestionNotFound:
+	case err == data.ErrQuestionNotFound:
 		errNotFound := fmt.Errorf("%s: %s", err.Error(), id)
 		return pf.NewResponse(http.StatusNotFound, "", errNotFound)
 	case err != nil:
@@ -93,7 +100,7 @@ func (n *Nexus) AnswerQuestion(r *pf.Request) (*pf.Response, error) {
 
 	var correct bool
 	if proffered.Answer == q.Solution() {
-		defer n.sgw.DeleteQuestion(id)
+		defer n.ds.DeleteQuestion(id)
 		correct = true
 	}
 

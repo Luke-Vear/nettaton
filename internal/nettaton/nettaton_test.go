@@ -7,9 +7,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/Luke-Vear/nettaton/internal/data"
 	pf "github.com/Luke-Vear/nettaton/internal/platform"
 	"github.com/Luke-Vear/nettaton/internal/quiz"
-	"github.com/Luke-Vear/nettaton/internal/state"
 )
 
 var (
@@ -73,17 +73,14 @@ var (
 }
 `
 
-	storeOK   = happyStore{}
-	gatewayOK = state.NewGateway(storeOK)
-	nexusOK   = NewNexus(gatewayOK)
+	storeOK = happyStore{}
+	nexusOK = NewNexus(storeOK)
 
-	storeNotOK   = unhappyStore{}
-	gatewayNotOK = state.NewGateway(storeNotOK)
-	nexusNotOK   = NewNexus(gatewayNotOK)
+	storeNotOK = unhappyStore{}
+	nexusNotOK = NewNexus(storeNotOK)
 
-	storeNotFound   = notFoundStore{}
-	gatewayNotFound = state.NewGateway(storeNotFound)
-	nexusNotFound   = NewNexus(gatewayNotFound)
+	storeNotFound = notFoundStore{}
+	nexusNotFound = NewNexus(storeNotFound)
 )
 
 type happyStore struct{}
@@ -115,13 +112,13 @@ func (d unhappyStore) DeleteQuestion(questionID string) error {
 type notFoundStore struct{}
 
 func (d notFoundStore) GetQuestion(string) (*quiz.Question, error) {
-	return nil, state.ErrQuestionNotFound
+	return nil, data.ErrQuestionNotFound
 }
 func (d notFoundStore) UpdateQuestion(*quiz.Question) error {
-	return state.ErrQuestionNotFound
+	return data.ErrQuestionNotFound
 }
 func (d notFoundStore) DeleteQuestion(questionID string) error {
-	return state.ErrQuestionNotFound
+	return data.ErrQuestionNotFound
 }
 
 //

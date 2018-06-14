@@ -1,4 +1,4 @@
-package store
+package data
 
 import (
 	"fmt"
@@ -13,31 +13,31 @@ var (
 	ErrQuestionNotFound = fmt.Errorf("questionID not found")
 )
 
-// DB represents a physical datastore.
-type DB struct {
+// Store represents a physical datastore.
+type Store struct {
 	dynamo *dynamodb.DynamoDB
 	table  string
 }
 
-// NewDB returns a instantiated DB.
-func NewDB(table string, dynamo *dynamodb.DynamoDB) *DB {
-	return &DB{
+// NewStore returns a instantiated Store.
+func NewStore(table string, dynamo *dynamodb.DynamoDB) *Store {
+	return &Store{
 		table:  table,
 		dynamo: dynamo,
 	}
 }
 
 // GetQuestion retrieves a question in the database by primary key.
-func (db *DB) GetQuestion(questionID string) (*quiz.Question, error) {
+func (ss *Store) GetQuestion(questionID string) (*quiz.Question, error) {
 
 	query := &dynamodb.GetItemInput{
-		TableName: aws.String(db.table),
+		TableName: aws.String(ss.table),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {S: aws.String(questionID)},
 		},
 	}
 
-	result, err := db.dynamo.GetItem(query)
+	result, err := ss.dynamo.GetItem(query)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (db *DB) GetQuestion(questionID string) (*quiz.Question, error) {
 }
 
 // UpdateQuestion creates or overwrites a question in the database by primary key.
-func (db *DB) UpdateQuestion(qq *quiz.Question) error {
+func (ss *Store) UpdateQuestion(qq *quiz.Question) error {
 
 	avm, err := dynamodbattribute.MarshalMap(qq)
 	if err != nil {
@@ -63,27 +63,27 @@ func (db *DB) UpdateQuestion(qq *quiz.Question) error {
 	}
 
 	pii := &dynamodb.PutItemInput{
-		TableName: aws.String(db.table),
+		TableName: aws.String(ss.table),
 		Item:      avm,
 	}
 
-	if _, err := db.dynamo.PutItem(pii); err != nil {
+	if _, err := ss.dynamo.PutItem(pii); err != nil {
 		return err
 	}
 	return nil
 }
 
 // DeleteQuestion deletes a question in the database by primary key.
-func (db *DB) DeleteQuestion(questionID string) error {
+func (ss *Store) DeleteQuestion(questionID string) error {
 
 	query := &dynamodb.DeleteItemInput{
-		TableName: aws.String(db.table),
+		TableName: aws.String(ss.table),
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {S: aws.String(questionID)},
 		},
 	}
 
-	_, err := db.dynamo.DeleteItem(query)
+	_, err := ss.dynamo.DeleteItem(query)
 	if err != nil {
 		return err
 	}

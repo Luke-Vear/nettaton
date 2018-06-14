@@ -1,9 +1,8 @@
 package internal
 
 import (
+	"github.com/Luke-Vear/nettaton/internal/data"
 	"github.com/Luke-Vear/nettaton/internal/nettaton"
-	"github.com/Luke-Vear/nettaton/internal/state"
-	"github.com/Luke-Vear/nettaton/internal/state/store"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 )
@@ -22,16 +21,11 @@ func NewDependencyResolver(config Config) *DependencyResolver {
 
 // ResolveNettatonNexus ...
 func (r *DependencyResolver) ResolveNettatonNexus() *nettaton.Nexus {
-	return nettaton.NewNexus(r.ResolveGateway())
+	return nettaton.NewNexus(r.ResolveDatastore())
 }
 
-// ResolveGateway ...
-func (r *DependencyResolver) ResolveGateway() *state.Gateway {
-	return state.NewGateway(r.ResolveDB())
-}
-
-// ResolveDB ...
-func (r *DependencyResolver) ResolveDB() *store.DB {
+// ResolveDatastore ...
+func (r *DependencyResolver) ResolveDatastore() *data.Store {
 	dynamo := dynamodb.New(session.New())
-	return store.NewDB(r.config.DB.Table, dynamo)
+	return data.NewStore(r.config.DB.Table, dynamo)
 }
