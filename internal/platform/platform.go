@@ -2,22 +2,34 @@ package platform
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 )
 
 type (
-	// Request ...
+	// Request is what we expect from the AWS API Gateway Proxy Integration.
 	Request = events.APIGatewayProxyRequest
-	// Response ...
+	// Response is what the AWS API Gateway Proxy Integration expects from us.
 	Response = events.APIGatewayProxyResponse
 )
 
+// headers required so far are:
+// "Content-Type" - this is required for AWS API Gateway Proxy integration.
+// "Access-Control-Allow-Origin" - other people can consume API.
+var headers = map[string]string{"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"}
+
 // NewResponse returns a properly formatted Response.
 func NewResponse(statusCode int, body string, err error) (*Response, error) {
+
+	// TODO: once logs been proved, reset.
+	// if statusCode >= 500 && statusCode < 600 {
+	if statusCode > 0 {
+		log.Println(err)
+	}
+
 	if err != nil {
-		// TODO: log the err
 		errJSON, _ := json.Marshal(struct {
 			Error string `json:"error"`
 		}{
@@ -25,8 +37,9 @@ func NewResponse(statusCode int, body string, err error) (*Response, error) {
 		})
 		body = string(errJSON)
 	}
+
 	return &Response{
-		Headers:    map[string]string{"Content-Type": "application/json", "Access-Control-Allow-Origin": "*"},
+		Headers:    headers,
 		StatusCode: statusCode,
 		Body:       body,
 	}, nil

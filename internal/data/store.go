@@ -16,13 +16,13 @@ var (
 // Store represents a physical datastore.
 type Store struct {
 	dynamo *dynamodb.DynamoDB
-	table  string
+	table  *string
 }
 
 // NewStore returns a instantiated Store.
 func NewStore(table string, dynamo *dynamodb.DynamoDB) *Store {
 	return &Store{
-		table:  table,
+		table:  aws.String(table),
 		dynamo: dynamo,
 	}
 }
@@ -30,14 +30,14 @@ func NewStore(table string, dynamo *dynamodb.DynamoDB) *Store {
 // GetQuestion retrieves a question in the database by primary key.
 func (ds *Store) GetQuestion(questionID string) (*quiz.Question, error) {
 
-	query := &dynamodb.GetItemInput{
-		TableName: aws.String(ds.table),
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(questionID)},
-		},
+	qid := aws.String(questionID)
+
+	gii := &dynamodb.GetItemInput{
+		TableName: ds.table,
+		Key:       map[string]*dynamodb.AttributeValue{"id": {S: qid}},
 	}
 
-	result, err := ds.dynamo.GetItem(query)
+	result, err := ds.dynamo.GetItem(gii)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (ds *Store) UpdateQuestion(qq *quiz.Question) error {
 	}
 
 	pii := &dynamodb.PutItemInput{
-		TableName: aws.String(ds.table),
+		TableName: ds.table,
 		Item:      avm,
 	}
 
@@ -76,14 +76,14 @@ func (ds *Store) UpdateQuestion(qq *quiz.Question) error {
 // DeleteQuestion deletes a question in the database by primary key.
 func (ds *Store) DeleteQuestion(questionID string) error {
 
-	query := &dynamodb.DeleteItemInput{
-		TableName: aws.String(ds.table),
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": {S: aws.String(questionID)},
-		},
+	qid := aws.String(questionID)
+
+	dii := &dynamodb.DeleteItemInput{
+		TableName: ds.table,
+		Key:       map[string]*dynamodb.AttributeValue{"id": {S: qid}},
 	}
 
-	_, err := ds.dynamo.DeleteItem(query)
+	_, err := ds.dynamo.DeleteItem(dii)
 	if err != nil {
 		return err
 	}
