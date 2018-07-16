@@ -2,6 +2,7 @@ package quiz
 
 import (
 	"math/rand"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -30,10 +31,11 @@ type Question struct {
 // NewQuestion returns a new randomly generated question struct.
 // The fields can be overwritten by parameters.
 func NewQuestion(ip, network, kind string) *Question {
+	rip, maxSize := randomIP()
 	q := &Question{
 		ID:      uuid.New().String(),
-		IP:      randomIP(),
-		Network: randomNetwork(),
+		IP:      rip,
+		Network: randomNetwork(maxSize),
 		Kind:    randomQuestionKind(),
 		TTL:     time.Now().Add(time.Hour * 8).Unix(),
 	}
@@ -56,13 +58,13 @@ func (q *Question) Solution() string {
 	return solvers[q.Kind](a)
 }
 
-// randomIP returns a random private IP as a string.
-func randomIP() string {
-	switch r(3) {
-	case 0: // In range 10.0.0.0/8
+// randomIP returns a random private IP as a string with its max cidr.
+func randomIP() (string, int) {
+	switch r(5) {
+	case 0, 1, 2: // In range 10.0.0.0/8
 		return addressInRange(10, 0, 255)
 
-	case 1: // In range 172.16.0.0/12
+	case 3: // In range 172.16.0.0/12
 		return addressInRange(172, 16, 31)
 
 	default: // In range 192.168.0.0/16
@@ -75,26 +77,30 @@ func randomIP() string {
 // oct2 = second octet
 // oct2s = second octet start
 // oct2f = second octet finish
-func addressInRange(oct1, oct2s, oct2f int) string {
+func addressInRange(oct1, oct2s, oct2f int) (string, int) {
 	oct2 := 0
 	if oct2s != oct2f {
 		oct2 = r(oct2f - oct2s)
 	}
 	oct2 += oct2s
 
+	maxSize := 12
+	if oct1 == 192 {
+		maxSize = 16
+	}
+
 	o1 := s(oct1)
 	o2 := s(oct2)
 	o3 := s(r(253) + 1)
 	o4 := s(r(253) + 1)
 
-	return o1 + "." + o2 + "." + o3 + "." + o4
+	return o1 + "." + o2 + "." + o3 + "." + o4, maxSize
 }
 
 // randomNetwork returns a network in netmask or CIDR notation in the range
 // of /12 to /30.
-func randomNetwork() string {
-	ln := len(solvers)
-	rn := r(ln)
+func randomNetwork(maxSize int) string {
+	rn := r(minNet - maxSize)
 	net := networks[rn]
 
 	switch r(2) {
@@ -106,12 +112,7 @@ func randomNetwork() string {
 
 // randomQuestionKind returns a kind of subnetting question.
 func randomQuestionKind() string {
-	var qks []string
-	for key := range solvers {
-		qks = append(qks, key)
-	}
-
-	ls := len(solvers)
-	rn := r(ls)
-	return qks[rn]
+	keys := reflect.ValueOf(solvers).MapKeys()
+	rn := r(len(keys))
+	return keys[rn].String()
 }

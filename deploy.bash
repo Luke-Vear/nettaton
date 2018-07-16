@@ -21,8 +21,8 @@ echo "---- ---- ---- ----"
 echo "  Unit Test Init"
 echo "---- ---- ---- ----"
 
-for t in $(go list ./... | grep -v -E 'vendor|sandbox'); do
-  go test -cover ${t} 
+for t in $(vgo list ./... | grep -v -E 'vendor|sandbox'); do
+  vgo test -cover ${t} 
 done
 
 echo "---- ---- ---- ----"
@@ -41,7 +41,7 @@ for dir in ${BUILD_LIST[@]}; do
   component="${dir##*/}"
   echo "Building ${component}"
 
-  go build -o "${ARTEFACT_NAME}"
+  vgo build -o "${ARTEFACT_NAME}"
   touch --date=@0 "${ARTEFACT_NAME}"
   zip -X -j "${ARTEFACT_NAME}".zip "${ARTEFACT_NAME}"
 

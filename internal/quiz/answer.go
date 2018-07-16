@@ -46,6 +46,9 @@ var (
 		{netmask: "255.248.0.0", prefix: "13"},
 		{netmask: "255.240.0.0", prefix: "12"},
 	}
+
+	maxNet = 12
+	minNet = 30
 )
 
 // answerer can answer questions about a subnet. It is created from a Question
