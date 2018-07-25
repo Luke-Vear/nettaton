@@ -27,3 +27,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 * Hat tip to anyone who's code was used
 * Inspiration
 * etc
+
+## TODO
+
+* Makefile
+* Client
+* WASM GUI
+* Terraform clean run on new environment.
+* Question kinds interface for more questions.
+
+# main
+
