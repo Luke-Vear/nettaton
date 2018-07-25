@@ -67,8 +67,6 @@ terraform init \
   -backend-config="key=terraform.tfstate" \
   -backend-config="region=${BUCKET_REGION}"
 
-terraform get -update
-
 terraform apply \
   --var-file="./vars/${ENVIRONMENT}.tfvars" \
   -auto-approve
