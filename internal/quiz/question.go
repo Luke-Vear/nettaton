@@ -1,6 +1,7 @@
 package quiz
 
 import (
+	"encoding/json"
 	"math/rand"
 	"reflect"
 	"strconv"
@@ -49,6 +50,11 @@ func NewQuestion(ip, network, kind string) *Question {
 		q.Kind = kind
 	}
 	return q
+}
+
+func (q *Question) String() string {
+	json, _ := json.MarshalIndent(q, "", "  ")
+	return string(json)
 }
 
 // Solution looks up the function required to provide the solution based upon

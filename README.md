@@ -30,11 +30,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## TODO
 
-* Makefile
 * Client
 * WASM GUI
+* Makefile
 * Terraform clean run on new environment.
 * Question kinds interface for more questions.
-
-# main
-
