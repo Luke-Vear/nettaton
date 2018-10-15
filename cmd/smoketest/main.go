@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 
 	"github.com/Luke-Vear/nettaton/internal/quiz"
@@ -11,8 +12,20 @@ import (
 )
 
 func main() {
+	var env string
+	flag.StringVar(&env, "env", "", "The environment to smoketest.")
+	flag.Parse()
 
-	nc := nettaton.NewClient("api.dev.nettaton.com")
+	if env == "prod" {
+		env = ""
+	} else {
+		env = "." + env
+	}
+
+	endpoint := "api" + env + ".nettaton.com"
+	fmt.Println(endpoint)
+
+	nc := nettaton.NewClient(endpoint)
 
 	q, err := nc.CreateQuestion()
 	if err != nil {
@@ -30,15 +43,16 @@ func main() {
 		panic(err)
 	}
 
-	rq, err := nc.ReadQuestion(u)
+	_, err = nc.ReadQuestion(u)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v\n", rq)
 
 	aq, err := nc.AnswerQuestion(u, qq.Solution())
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v\n", aq)
+
+	fmt.Println("expect: { \"correct\": true }")
+	fmt.Println("actual:", aq)
 }
