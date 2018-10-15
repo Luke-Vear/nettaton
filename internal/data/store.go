@@ -29,7 +29,6 @@ func NewStore(table string, dynamo *dynamodb.DynamoDB) *Store {
 
 // GetQuestion retrieves a question in the database by primary key.
 func (ds *Store) GetQuestion(questionID string) (*quiz.Question, error) {
-
 	qid := aws.String(questionID)
 
 	gii := &dynamodb.GetItemInput{
@@ -56,7 +55,6 @@ func (ds *Store) GetQuestion(questionID string) (*quiz.Question, error) {
 
 // UpdateQuestion creates or overwrites a question in the database by primary key.
 func (ds *Store) UpdateQuestion(qq *quiz.Question) error {
-
 	avm, err := dynamodbattribute.MarshalMap(qq)
 	if err != nil {
 		return err
@@ -75,7 +73,6 @@ func (ds *Store) UpdateQuestion(qq *quiz.Question) error {
 
 // DeleteQuestion deletes a question in the database by primary key.
 func (ds *Store) DeleteQuestion(questionID string) error {
-
 	qid := aws.String(questionID)
 
 	dii := &dynamodb.DeleteItemInput{

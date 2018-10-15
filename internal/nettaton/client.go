@@ -29,14 +29,13 @@ func NewClient(serverFQDN string) *Client {
 	}
 }
 
-func (c *Client) endpoint() string {
+func (c *Client) questionEndpoint() string {
 	return "https://" + c.serverFQDN + "/question"
 }
 
 // CreateQuestion ...
 func (c *Client) CreateQuestion() (string, error) {
-
-	resp, err := c.http.Post(c.endpoint(), c.ct, nil)
+	resp, err := c.http.Post(c.questionEndpoint(), c.ct, nil)
 	if err != nil {
 		return "", err
 	}
@@ -55,8 +54,7 @@ func (c *Client) CreateQuestion() (string, error) {
 }
 
 func (c *Client) ReadQuestion(uuid uuid.UUID) (string, error) {
-
-	endpoint := c.endpoint() + "/" + uuid.String()
+	endpoint := c.questionEndpoint() + "/" + uuid.String()
 
 	resp, err := c.http.Get(endpoint)
 	if err != nil {
@@ -77,8 +75,7 @@ func (c *Client) ReadQuestion(uuid uuid.UUID) (string, error) {
 }
 
 func (c *Client) AnswerQuestion(uuid uuid.UUID, answer string) (string, error) {
-
-	endpoint := c.endpoint() + "/" + uuid.String() + "/answer"
+	endpoint := c.questionEndpoint() + "/" + uuid.String() + "/answer"
 
 	resp, err := c.http.Post(endpoint, c.ct, reader(answer))
 	if err != nil {
