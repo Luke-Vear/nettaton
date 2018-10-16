@@ -16,8 +16,12 @@ backend-build: backend-unit ## Build the artefacts for the backend go services.
 	./scripts/backend.bash build
 .PHONY: backend-build
 
-backend-deploy: backend-build ## Deploy the artefacts for the backend go services.
-	./scripts/backend.bash deploy ${ENV}
+backend-plan: backend-build ## Plan a deployment of artefacts and infrastructure for the backend go services.
+	./scripts/backend.bash plan
+.PHONY: backend-plan
+
+backend-deploy: backend-build ## Deploy the artefacts and infrastructure for the backend go services.
+	./scripts/backend.bash deploy
 	$(MAKE) backend-smoketest
 	$(MAKE) cleanup
 .PHONY: backend-deploy

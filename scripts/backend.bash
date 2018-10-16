@@ -3,17 +3,17 @@
 set -e
 
 PROJECT="nettaton"
-PROJECT_ROOT="$(dirname "$(readlink -f ${BASH_SOURCE})")/.."
+R53_ZONE_ID="ZYJ1F75JP3JG"
 BUCKET_REGION="eu-west-1"
-ENVIRONMENT="${2}"
+
+PROJECT_ROOT="$(dirname "$(readlink -f ${BASH_SOURCE})")/.."
 CMD_DIR="${PROJECT_ROOT}/cmd"
 BUILD_LIST=$(find ${CMD_DIR}/* -type d)
 ARTEFACT_NAME="handler"
 
 cd ${PROJECT_ROOT}
 
-#### Test ####################################################################
-
+#### Test
 unit() {
   echo "---- ---- ---- ----"
   echo "  Unit Test Init"
@@ -28,8 +28,7 @@ unit() {
   echo "---- ---- ---- ----"
 }
 
-#### Build ###################################################################
-
+#### Build
 build() {
   echo "---- ---- ---- ----"
   echo "   Building Init"
@@ -53,63 +52,65 @@ build() {
   echo "---- ---- ---- ----"
 }
 
-#### Deploy ##################################################################
-
-deploy() {
+#### TF
+tf() {
   chkenv
 
   echo "---- ---- ---- ----"
-  echo "  Deploy Init"
+  echo "  TF $1 Init"
   echo "---- ---- ---- ----"
 
   cd deployments
 
   terraform init \
-    -backend-config="bucket=${PROJECT}-${ENVIRONMENT}-tfstate" \
+    -backend-config="bucket=${PROJECT}-${ENV}-tfstate" \
     -backend-config="key=terraform.tfstate" \
     -backend-config="region=${BUCKET_REGION}"
 
-  terraform apply \
-    --var-file="./vars/${ENVIRONMENT}.tfvars" \
-    -auto-approve
+  terraform ${1} \
+    --var env="${ENV}" \
+    --var r53_zone_id="${R53_ZONE_ID}" \
+    -input=false
 
   rm -rf .terraform
 
   cd - >/dev/null
 
   echo "---- ---- ---- ----"
-  echo " Deploy Complete"
+  echo " TF $1 Complete"
   echo "---- ---- ---- ----"
 }
 
-#### Smoketest ###############################################################
+plan() {
+  tf plan
+}
 
+deploy() {
+  tf apply
+}
+
+#### Smoketest
 smoketest() {
   chkenv
 
   echo "---- ---- ---- ----"
-  echo "  Smoketest Test Init"
+  echo "  Smoketest Init"
   echo "---- ---- ---- ----"
 
-  go run test/smoketest.go --env ${ENVIRONMENT}
+  go run test/smoketest.go --env ${ENV}
 
   echo "---- ---- ---- ----"
-  echo " Smoketest Test Complete"
+  echo " Smoketest Complete"
   echo "---- ---- ---- ----"
 }
 
-#### Misc ####################################################################
-
+#### Misc
 chkenv() {
-  if [[ -z $ENVIRONMENT ]]; then
-    echo 'environment must be set'
+  if [[ -z $ENV ]]; then
+    echo 'ENV must be set'
     exit 1
   fi
 }
 
-
 $1
 exit 0
-
-
-main
