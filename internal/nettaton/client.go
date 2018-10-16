@@ -74,8 +74,12 @@ func (c *Client) ReadQuestion(uuid uuid.UUID) (string, error) {
 	return bbToJSON(bb)
 }
 
+func (c *Client) answerEndpoint(id string) string {
+	return c.questionEndpoint() + "/" + id + "/answer"
+}
+
 func (c *Client) AnswerQuestion(uuid uuid.UUID, answer string) (string, error) {
-	endpoint := c.questionEndpoint() + "/" + uuid.String() + "/answer"
+	endpoint := c.answerEndpoint(uuid.String())
 
 	resp, err := c.http.Post(endpoint, c.ct, reader(answer))
 	if err != nil {

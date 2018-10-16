@@ -62,7 +62,7 @@ deploy() {
   echo "  Deploy Init"
   echo "---- ---- ---- ----"
 
-  cd terraform
+  cd deployments
 
   terraform init \
     -backend-config="bucket=${PROJECT}-${ENVIRONMENT}-tfstate" \
@@ -91,7 +91,7 @@ smoketest() {
   echo "  Smoketest Test Init"
   echo "---- ---- ---- ----"
 
-  go run cmd/smoketest/main.go --env ${ENVIRONMENT}
+  go run test/smoketest.go --env ${ENVIRONMENT}
 
   echo "---- ---- ---- ----"
   echo " Smoketest Test Complete"
