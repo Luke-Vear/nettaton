@@ -8,24 +8,30 @@ cleanup: ## Clean all the build artefacts up.
 	@find . -name "*".zip -exec rm {} \+
 .PHONY: cleanup
 
-backend-unit: ## Test the source for the backend go services.
-	./scripts/backend.bash unit
-.PHONY: backend-unit
+serve: ## Run a local webserver for the web app.
+	go run ./tools/server/server.go --dir ./web
+.PHONY: serve
 
-backend-build: backend-unit ## Build the artefacts for the backend go services.
-	./scripts/backend.bash build
-.PHONY: backend-build
+unittest: ## Test the go packages.
+	./scripts/pipeline.sh unit
+.PHONY: unittest
 
-backend-plan: backend-build ## Plan a deployment of artefacts and infrastructure for the backend go services.
-	./scripts/backend.bash plan
-.PHONY: backend-plan
+build: unittest ## Build the artefacts for the wasm webapp and the go services.
+	./scripts/pipeline.sh build
+.PHONY: build
 
-backend-deploy: backend-build ## Deploy the artefacts and infrastructure for the backend go services.
-	./scripts/backend.bash deploy
-	$(MAKE) backend-smoketest
+plan-deploy: build ## Plan a deployment of artefacts and infrastructure.
+	./scripts/pipeline.sh plan
+.PHONY: plan-deploy
+
+deploy: build ## Deploy the artefacts and infrastructure.
+	./scripts/pipeline.sh deploy
+	$(MAKE) smoketest
 	$(MAKE) cleanup
-.PHONY: backend-deploy
+.PHONY: deploy
 
-backend-smoketest: ## Test the deployed backend go services.
-	./scripts/backend.bash smoketest ${ENV}
-.PHONY: backend-smoketest
+smoketest: ## Test the deployed backend go services.
+	./scripts/pipeline.sh smoke
+.PHONY: smoketest
+
+
