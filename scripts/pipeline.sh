@@ -15,25 +15,13 @@ cd ${PROJECT_ROOT}
 
 #### Test
 unit() {
-  echo "---- ---- ---- ----"
-  echo "  Unit Test Init"
-  echo "---- ---- ---- ----"
-
   for t in $(go list ./... | grep -v -E 'vendor|sandbox'); do
     go test -cover ${t} 
   done
-
-  echo "---- ---- ---- ----"
-  echo " Unit Test Complete"
-  echo "---- ---- ---- ----"
 }
 
 #### Build
-build() {
-  echo "---- ---- ---- ----"
-  echo "   Building Init"
-  echo "---- ---- ---- ----"
-
+build_backend() {
   for dir in ${BUILD_LIST[@]}; do
     cd $dir
     component="${dir##*/}"
@@ -46,24 +34,18 @@ build() {
     rm -vf "${ARTEFACT_NAME}"
     cd - >/dev/null
   done
+}
 
+build_frontend() {
   cd web
   GOOS=js GOARCH=wasm go build -o main.wasm
-  cd ..
   echo "some zip thing"
-
-  echo "---- ---- ---- ----"
-  echo " Building Complete"
-  echo "---- ---- ---- ----"
+  cd ..
 }
 
 #### TF
 tf() {
   chkenv
-
-  echo "---- ---- ---- ----"
-  echo "  TF $1 Init"
-  echo "---- ---- ---- ----"
 
   cd deployments
 
@@ -80,10 +62,6 @@ tf() {
   rm -rf .terraform
 
   cd - >/dev/null
-
-  echo "---- ---- ---- ----"
-  echo " TF $1 Complete"
-  echo "---- ---- ---- ----"
 }
 
 plan() {
@@ -94,19 +72,20 @@ deploy() {
   tf apply
 }
 
+destroy() {
+  tf destroy
+}
+
 #### Smoketest
 smoke() {
   chkenv
-
-  echo "---- ---- ---- ----"
-  echo "  Smoketest Init"
-  echo "---- ---- ---- ----"
-
   go run test/smoketest.go --env ${ENV}
+}
 
-  echo "---- ---- ---- ----"
-  echo " Smoketest Complete"
-  echo "---- ---- ---- ----"
+#### Clean
+clean() { 
+  find "${PROJECT_ROOT}" -name "*.zip" -exec rm {} \+
+  # cd - >/dev/null
 }
 
 #### Misc
