@@ -23,7 +23,7 @@ resource "aws_api_gateway_resource" "question_id_answer" {
 resource "aws_api_gateway_deployment" "quiz_api" {
   rest_api_id = "${aws_api_gateway_rest_api.api.id}"
   stage_name  = "monostage"
-  depends_on = ["module.createquestion", "module.readquestion", "module.answerquestion"]
+  depends_on  = ["module.createquestion", "module.readquestion", "module.answerquestion"]
 }
 
 resource "aws_api_gateway_domain_name" "quiz_api" {
