@@ -11,7 +11,9 @@ import (
 )
 
 var (
-	ErrLenIdZero           = fmt.Errorf("length of id path parameter is zero")
+	// ErrLenIDZero error occurs when length of id path parameter is zero.
+	ErrLenIDZero = fmt.Errorf("length of id path parameter is zero")
+	// ErrInvalidQuestionKind error occurs when question kind is invalid.
 	ErrInvalidQuestionKind = fmt.Errorf("question kind is invalid")
 )
 
@@ -59,7 +61,7 @@ func (n *Nexus) CreateQuestion(r *pf.Request) (*pf.Response, error) {
 func (n *Nexus) ReadQuestion(r *pf.Request) (*pf.Response, error) {
 	id, _ := r.PathParameters["id"]
 	if len(id) == 0 {
-		return pf.NewResponse(http.StatusBadRequest, "", ErrLenIdZero)
+		return pf.NewResponse(http.StatusBadRequest, "", ErrLenIDZero)
 	}
 
 	q, err := n.ds.GetQuestion(id)
@@ -79,7 +81,7 @@ func (n *Nexus) ReadQuestion(r *pf.Request) (*pf.Response, error) {
 func (n *Nexus) AnswerQuestion(r *pf.Request) (*pf.Response, error) {
 	id, _ := r.PathParameters["id"]
 	if len(id) == 0 {
-		return pf.NewResponse(http.StatusBadRequest, "", ErrLenIdZero)
+		return pf.NewResponse(http.StatusBadRequest, "", ErrLenIDZero)
 	}
 
 	proffered := &struct {

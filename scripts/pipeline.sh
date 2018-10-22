@@ -23,7 +23,7 @@ unit() {
 #### Build
 build_backend() {
   for dir in ${BUILD_LIST[@]}; do
-    cd $dir
+    cd ${dir}
     component="${dir##*/}"
     echo "Building ${component}"
 
@@ -38,8 +38,7 @@ build_backend() {
 
 build_frontend() {
   cd web
-  GOOS=js GOARCH=wasm go build -o main.wasm
-  echo "some zip thing"
+  yarn build
   cd ..
 }
 
@@ -50,17 +49,21 @@ tf() {
   cd deployments
 
   terraform init \
-    -backend-config="bucket=${PROJECT}-${ENV}-tfstate" \
-    -backend-config="key=terraform.tfstate" \
-    -backend-config="region=${BUCKET_REGION}"
+    --backend-config="bucket=${PROJECT}-${ENV}-tfstate" \
+    --backend-config="key=terraform.tfstate" \
+    --backend-config="region=${BUCKET_REGION}"
 
-  terraform ${1} \
-    --var env="${ENV}" \
-    --var r53_zone_id="${R53_ZONE_ID}" \
-    -input=false
+  tf_args=(
+    "--var env=${ENV}"
+    "--var r53_zone_id=${R53_ZONE_ID}"
+  )
 
-  rm -rf .terraform
+  if [[ ${1} != plan ]]; then
+    tf_args+=("--auto-approve")
+  fi
 
+  terraform ${1} ${tf_args[@]}
+    
   cd - >/dev/null
 }
 
@@ -76,6 +79,13 @@ destroy() {
   tf destroy
 }
 
+#### Serve
+serve() {
+  cd web
+  yarn start
+  cd ..
+}
+
 #### Smoketest
 smoke() {
   chkenv
@@ -85,12 +95,15 @@ smoke() {
 #### Clean
 clean() { 
   find "${PROJECT_ROOT}" -name "*.zip" -exec rm {} \+
-  # cd - >/dev/null
+  find "${PROJECT_ROOT}" -name ".terraform" -exec rm -rf {} \+
+  if [[ -a web/build ]]; then 
+    rm -rf web/build
+  fi
 }
 
 #### Misc
 chkenv() {
-  if [[ -z $ENV ]]; then
+  if [[ -z ${ENV} ]]; then
     echo 'ENV must be set'
     exit 1
   fi

@@ -22,7 +22,6 @@ var headers = map[string]string{"Content-Type": "application/json", "Access-Cont
 
 // NewResponse returns a properly formatted Response.
 func NewResponse(statusCode int, body string, err error) (*Response, error) {
-
 	if statusCode >= 500 && statusCode < 600 {
 		log.Println(err)
 	}

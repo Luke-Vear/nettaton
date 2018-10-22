@@ -16,6 +16,8 @@ resource "aws_lambda_function" "go_func" {
       "NETTATON_TABLE" = "${var.dynamo_table}"
     }
   }
+
+  depends_on = ["aws_s3_bucket_object.handler"]
 }
 
 resource "aws_api_gateway_method" "method" {
@@ -42,7 +44,7 @@ resource "aws_lambda_permission" "invoke" {
   source_arn    = "arn:aws:execute-api:${var.region}:${var.account_id}:${var.api_id}/*/${var.api_http_method}${var.api_resource_path}"
 }
 
-resource "aws_s3_bucket_object" "createquestion" {
+resource "aws_s3_bucket_object" "handler" {
   bucket = "${var.artefact_bucket}"
   key    = "${var.app}/handler.zip"
   source = "${var.artefact_dir}/handler.zip"

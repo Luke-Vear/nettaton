@@ -12,12 +12,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// Client allows the caller to interact with the nettaton server.
 type Client struct {
 	serverFQDN string
 	ct         string
 	http       *http.Client
 }
 
+// NewClient creates a *Client using the fully qualified domain name of the server.
 func NewClient(serverFQDN string) *Client {
 	httpClient := &http.Client{
 		Timeout: 5 * time.Second,
@@ -33,7 +35,7 @@ func (c *Client) questionEndpoint() string {
 	return "https://" + c.serverFQDN + "/question"
 }
 
-// CreateQuestion ...
+// CreateQuestion creates a question and stores it's uuid server side.
 func (c *Client) CreateQuestion() (string, error) {
 	resp, err := c.http.Post(c.questionEndpoint(), c.ct, nil)
 	if err != nil {
@@ -53,6 +55,7 @@ func (c *Client) CreateQuestion() (string, error) {
 	return bbToJSON(bb)
 }
 
+// ReadQuestion retrieves a question by uuid.
 func (c *Client) ReadQuestion(uuid uuid.UUID) (string, error) {
 	endpoint := c.questionEndpoint() + "/" + uuid.String()
 
@@ -78,6 +81,9 @@ func (c *Client) answerEndpoint(id string) string {
 	return c.questionEndpoint() + "/" + id + "/answer"
 }
 
+// AnswerQuestion submits an answer attempt to the server. The question attempted
+// to be answered is identfied by uuid. The response will indicate if the
+// submitted answer was correct.
 func (c *Client) AnswerQuestion(uuid uuid.UUID, answer string) (string, error) {
 	endpoint := c.answerEndpoint(uuid.String())
 
