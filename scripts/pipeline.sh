@@ -38,7 +38,7 @@ build_backend() {
 
 build_frontend() {
   cd web
-  npm run build
+  yarn build
   cd ..
 }
 
@@ -82,8 +82,7 @@ destroy() {
 #### Serve
 serve() {
   cd web
-  npm install
-  npm start
+  yarn start
   cd ..
 }
 

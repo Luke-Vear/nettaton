@@ -1,28 +1,19 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './index.css'
-import App from './App'
-// import registerServiceWorker from "./registerServiceWorker";
+import App from './app/App'
 
 import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import { Provider } from 'react-redux'
 
-import { reducer } from './redux'
-import { watcherSaga } from './sagas'
+import { reducer as questionReducer } from './question/questionRedux'
+import { watcherSaga as questionWatcherSaga } from './question/questionSagas'
 
-// create the saga middleware
 const sagaMiddleware = createSagaMiddleware()
 
-// dev tools middleware
-// const reduxDevTools =
-//   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__();
+let store = createStore(questionReducer, applyMiddleware(sagaMiddleware))
 
-// create a redux store with our reducer above and middleware
-let store = createStore(reducer, applyMiddleware(sagaMiddleware))
-
-// run the saga
-sagaMiddleware.run(watcherSaga)
+sagaMiddleware.run(questionWatcherSaga)
 
 ReactDOM.render(
   <Provider store={store}>
@@ -30,5 +21,3 @@ ReactDOM.render(
   </Provider>,
   document.getElementById('root')
 )
-
-// registerServiceWorker();

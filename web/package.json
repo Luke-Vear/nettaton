@@ -7,9 +7,11 @@
     "react-scripts": "1.0.17"
   },
   "dependencies": {
+    "@material-ui/core": "^3.3.2",
+    "@material/textfield": "^0.41.0",
     "axios": "^0.17.1",
     "gh-pages": "^1.1.0",
-    "react": "^16.2.0",
+    "react": "^16.3.0",
     "react-dom": "^16.2.0",
     "react-redux": "^5.0.6",
     "redux": "^3.7.2",
