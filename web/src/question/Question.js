@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { actions } from './questionRedux'
 import Button from '@material-ui/core/Button'
 
-export const Question = ({ fetching, fetchQuestion }) => (
+export const question = ({ fetching, fetchQuestion }) => (
   <div>
     {fetching ? (
       <Button variant='contained' color='primary' disabled>Fetching...</Button>
@@ -14,13 +14,11 @@ export const Question = ({ fetching, fetchQuestion }) => (
 )
 
 const mapStateToProps = state => ({
-  fetching: state.fetching,
-  question: state.question,
-  error: state.error
+  fetching: state.fetching
 })
 
 const mapDispatchToProps = dispatch => ({
   fetchQuestion: () => dispatch(actions.apiCallRequest())
 })
 
-export default connect(mapStateToProps, mapDispatchToProps)(Question)
+export default connect(mapStateToProps, mapDispatchToProps)(question)

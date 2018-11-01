@@ -6,14 +6,14 @@ import { createStore, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import { Provider } from 'react-redux'
 
-import { reducer as questionReducer } from './question/questionRedux'
-import { watcherSaga as questionWatcherSaga } from './question/questionSagas'
+import { reducer } from './question/questionRedux'
+import { watcherSaga } from './question/questionSagas'
 
 const sagaMiddleware = createSagaMiddleware()
 
-let store = createStore(questionReducer, applyMiddleware(sagaMiddleware))
+let store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
-sagaMiddleware.run(questionWatcherSaga)
+sagaMiddleware.run(watcherSaga)
 
 ReactDOM.render(
   <Provider store={store}>

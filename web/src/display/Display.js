@@ -14,7 +14,7 @@ export const Display = ({ fetching, question, error }) => {
 
   return (
     <div>
-      <p className='Display'>{message}</p>
+      <p>{message}</p>
     </div>
   )
 }
