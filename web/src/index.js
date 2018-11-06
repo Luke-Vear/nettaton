@@ -2,18 +2,22 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './app/App'
 
-import { createStore, applyMiddleware } from 'redux'
+import { createStore, applyMiddleware, combineReducers } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import { Provider } from 'react-redux'
 
-import { reducer } from './question/questionRedux'
-import { watcherSaga } from './question/questionSagas'
+import { reducer as quizReducer } from './quiz/redux'
+import { newQuestionWatcher, sendAnswerWatcher } from './quiz/sagas'
 
 const sagaMiddleware = createSagaMiddleware()
 
-let store = createStore(reducer, applyMiddleware(sagaMiddleware))
+const rootReducer = combineReducers({
+  quiz: quizReducer
+})
 
-sagaMiddleware.run(watcherSaga)
+let store = createStore(rootReducer, applyMiddleware(sagaMiddleware))
+
+sagaMiddleware.run(newQuestionWatcher, sendAnswerWatcher)
 
 ReactDOM.render(
   <Provider store={store}>

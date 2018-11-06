@@ -1,16 +1,22 @@
 import React from 'react'
-import { connect } from 'react-redux'
 
-export const Display = ({ fetching, question, error }) => {
-  let message = 'Click below to begin'
-
-  if (fetching) {
-    message = 'Fetching...'
-  } else if (question) {
-    message = questionKindMessage(question)
-  } else if (error) {
-    message = 'There appears to be something wrong with the server.'
-  }
+export const Display = ({ answer, busy, result, question, error }) => {
+  let message = (() => {
+    if (answer) {
+      return answer
+    }
+    if (busy) {
+      return 'Fetching...'
+    } else if (result) {
+      return result ? 'Correct!' : 'Wrong!'
+    } else if (question) {
+      return questionKindMessage(question)
+    } else if (error) {
+      return 'There appears to be something wrong with the server.'
+    } else {
+      return 'Click below to begin'
+    }
+  })()
 
   return (
     <div>
@@ -46,11 +52,3 @@ const questionKindMessage = (question) => {
 
   return message + '?'
 }
-
-const mapStateToProps = state => ({
-  question: state.question,
-  fetching: state.fetching,
-  error: state.error
-})
-
-export default connect(mapStateToProps)(Display)

@@ -37,9 +37,7 @@ build_backend() {
 }
 
 build_frontend() {
-  cd web
-  yarn build
-  cd ..
+  yarn --cwd web build
 }
 
 #### TF
@@ -81,9 +79,7 @@ destroy() {
 
 #### Serve
 serve() {
-  cd web
-  yarn start
-  cd ..
+  yarn --cwd web start
 }
 
 #### Smoketest

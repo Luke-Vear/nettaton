@@ -1,13 +1,10 @@
 import React from 'react'
-import Question from '../question/Question'
-import Display from '../display/Display'
+import Quiz from '../quiz/Quiz'
 
-const App = () => (
+const App = () =>
   <div>
     <h1>NETTATON</h1>
-    <Display />
-    <Question />
+    <Quiz />
   </div>
-)
 
 export default App
