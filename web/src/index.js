@@ -1,12 +1,35 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import React from 'react'
+import ReactDOM from 'react-dom'
+import App from './app/App'
 
-ReactDOM.render(<App />, document.getElementById('root'));
+import { Provider } from 'react-redux'
+import { createStore, applyMiddleware, combineReducers } from 'redux'
+import createSagaMiddleware from 'redux-saga'
+import { all } from 'redux-saga/effects'
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.unregister();
+import { reducer as quizReducer } from './quiz/redux'
+import { newQuestionWatcher, sendAnswerWatcher } from './quiz/sagas'
+
+const sagaMiddleware = createSagaMiddleware()
+
+const rootReducer = combineReducers({
+  quiz: quizReducer
+})
+
+let store = createStore(rootReducer, applyMiddleware(sagaMiddleware))
+
+function * rootSaga () {
+  yield all([
+    newQuestionWatcher(),
+    sendAnswerWatcher()
+  ])
+}
+
+sagaMiddleware.run(rootSaga)
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+)
