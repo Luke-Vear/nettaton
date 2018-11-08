@@ -2,9 +2,10 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './app/App'
 
+import { Provider } from 'react-redux'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 import createSagaMiddleware from 'redux-saga'
-import { Provider } from 'react-redux'
+import { all } from 'redux-saga/effects'
 
 import { reducer as quizReducer } from './quiz/redux'
 import { newQuestionWatcher, sendAnswerWatcher } from './quiz/sagas'
@@ -17,7 +18,14 @@ const rootReducer = combineReducers({
 
 let store = createStore(rootReducer, applyMiddleware(sagaMiddleware))
 
-sagaMiddleware.run(newQuestionWatcher, sendAnswerWatcher)
+function * rootSaga () {
+  yield all([
+    newQuestionWatcher(),
+    sendAnswerWatcher()
+  ])
+}
+
+sagaMiddleware.run(rootSaga)
 
 ReactDOM.render(
   <Provider store={store}>

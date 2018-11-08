@@ -2,36 +2,31 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { actions } from './redux'
 import { BusyButton } from './BusyButton'
-import { Display } from './Display'
-import TextField from '@material-ui/core/TextField'
+import { ResultDisplay } from './ResultDisplay'
+import { AnswerField } from './AnswerField'
+import { QuestionDisplay } from './QuestionDisplay'
 
-export const Quiz = ({ busy, question, answer, result, error, newQuestion, sendAnswer, updateAnswer }) =>
+export const Quiz = ({ busy, question, answer, correct, error, newQuestion, sendAnswer, updateAnswer }) =>
   <div>
-    <Display busy={busy} result={result} question={question} error={error} />
-    <TextField
-      id='outlined-name'
-      label='Answer'
-      value={answer}
-      onChange={event => updateAnswer(event.target.value)}
-      margin='normal'
-      variant='outlined'
-    />
-    <BusyButton text={'Next'} busy={busy} onClick={newQuestion} />
-    <BusyButton text={'Send'} busy={busy} onClick={(question, answer) => sendAnswer(question, answer)} />
+    <QuestionDisplay busy={busy} correct={correct} question={question} error={error} />
+    <ResultDisplay correct={correct} />
+    <AnswerField question={question} onChange={updateAnswer} />
+    <BusyButton text={'Next'} busy={busy} color='primary' onClick={newQuestion} />
+    <BusyButton text={'Send'} busy={busy || question === null} color='secondary' onClick={() => sendAnswer(question, answer)} />
   </div>
 
 const mapStateToProps = state => ({
   busy: state.quiz.busy,
   question: state.quiz.question,
   answer: state.quiz.answer,
-  result: state.quiz.result,
+  correct: state.quiz.correct,
   error: state.quiz.error
 })
 
 const mapDispatchToProps = dispatch => ({
   newQuestion: () => dispatch(actions.newQuestionRequest()),
   sendAnswer: (question, answer) => dispatch(actions.sendAnswerRequest(question, answer)),
-  updateAnswer: (answer) => dispatch(actions.updateAnswer(answer))
+  updateAnswer: (answer) => dispatch(actions.answerUpdate(answer))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(Quiz)

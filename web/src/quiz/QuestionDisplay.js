@@ -1,28 +1,18 @@
 import React from 'react'
 
-export const Display = ({ answer, busy, result, question, error }) => {
-  let message = (() => {
-    if (answer) {
-      return answer
-    }
-    if (busy) {
-      return 'Fetching...'
-    } else if (result) {
-      return result ? 'Correct!' : 'Wrong!'
-    } else if (question) {
-      return questionKindMessage(question)
-    } else if (error) {
-      return 'There appears to be something wrong with the server.'
-    } else {
-      return 'Click below to begin'
-    }
-  })()
+export const QuestionDisplay = ({ question, error }) =>
+  <div>
+    {contextMessage(question, error)}
+  </div>
 
-  return (
-    <div>
-      <p>{message}</p>
-    </div>
-  )
+const contextMessage = (question, error) => {
+  if (error) {
+    return 'There appears to be something wrong with the server.'
+  }
+  if (question) {
+    return questionKindMessage(question)
+  }
+  return 'Click next to get a new question.'
 }
 
 const questionKindMessage = (question) => {

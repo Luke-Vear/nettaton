@@ -25,16 +25,17 @@ function newQuestion () {
 }
 
 export function * sendAnswerWatcher () {
+  console.log('watching')
   yield takeLatest(types.SEND_ANSWER_REQUEST, sendAnswerSaga)
 }
 
 export function * sendAnswerSaga (action) {
-  console.log('sendAnswerSaga:', action.question)
+  console.log('sendAnswerSaga:', action)
   try {
     const response = yield call(sendAnswer, action.question, action.answer)
-    const result = response.data
+    const correct = response.data.correct
 
-    yield put(actions.sendAnswerSuccess(result))
+    yield put(actions.sendAnswerSuccess(correct))
   } catch (error) {
     yield put(actions.sendAnswerFailure(error))
   }
