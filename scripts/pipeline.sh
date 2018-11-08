@@ -54,6 +54,7 @@ tf() {
   tf_args=(
     "--var env=${ENV}"
     "--var r53_zone_id=${R53_ZONE_ID}"
+    "--var web_js=$(find  ../web/build/static/js -name "*.js" -exec basename {} \+)"
   )
 
   if [[ ${1} != plan ]]; then

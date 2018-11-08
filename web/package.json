@@ -1,6 +1,6 @@
 {
-  "name": "redux-saga-beginner-tutorial",
-  "homepage": "https://github.io/redux-saga-beginner-tutorial",
+  "name": "nettaton",
+  "homepage": "https://nettaton.com",
   "version": "0.1.0",
   "private": true,
   "devDependencies": {

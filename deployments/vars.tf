@@ -19,5 +19,11 @@ variable "db_capacity" {
 }
 
 # r53
-
 variable "r53_zone_id" {}
+
+# web
+variable "web_path" {
+  default = "../web/build"
+}
+
+variable "web_js" {}

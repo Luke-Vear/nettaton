@@ -2,6 +2,20 @@ import { takeLatest, call, put } from 'redux-saga/effects'
 import axios from 'axios'
 import { types, actions } from './redux'
 
+function buildEndpoint () {
+  var env = process.env.ENV || 'dev'
+
+  let bar = 'https://api.'
+  if (env !== 'prod') {
+    bar += env + '.'
+  }
+  bar += 'nettaton.com'
+
+  return bar
+}
+
+const endpoint = buildEndpoint()
+
 export function * newQuestionWatcher () {
   yield takeLatest(types.NEW_QUESTION_REQUEST, newQuestionSaga)
 }
@@ -20,17 +34,15 @@ export function * newQuestionSaga () {
 function newQuestion () {
   return axios({
     method: 'post',
-    url: 'https://api.dev.nettaton.com/question'
+    url: endpoint + '/question'
   })
 }
 
 export function * sendAnswerWatcher () {
-  console.log('watching')
   yield takeLatest(types.SEND_ANSWER_REQUEST, sendAnswerSaga)
 }
 
 export function * sendAnswerSaga (action) {
-  console.log('sendAnswerSaga:', action)
   try {
     const response = yield call(sendAnswer, action.question, action.answer)
     const correct = response.data.correct
@@ -42,10 +54,9 @@ export function * sendAnswerSaga (action) {
 }
 
 function sendAnswer (question, answer) {
-  console.log('sendAnswer')
   return axios({
     method: 'post',
-    url: 'https://api.dev.nettaton.com/question/' + question.id + '/answer',
+    url: endpoint + '/question/' + question.id + '/answer',
     data: {
       answer: answer
     }
