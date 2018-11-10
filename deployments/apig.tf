@@ -39,7 +39,7 @@ resource "aws_api_gateway_base_path_mapping" "quiz_api" {
 
 resource "aws_acm_certificate" "quiz_api" {
   provider          = "aws.us-east-1"
-  domain_name       = "${var.env == "prod" ? "api.nettaton.com" : "api.${var.env}.nettaton.com"}"
+  domain_name       = "api.${local.endpoint}"
   validation_method = "DNS"
 }
 
@@ -55,7 +55,7 @@ resource "aws_route53_record" "quiz_api" {
   }
 }
 
-resource "aws_route53_record" "cert_validation" {
+resource "aws_route53_record" "api_cert_validation" {
   provider = "aws.us-east-1"
   name     = "${aws_acm_certificate.quiz_api.domain_validation_options.0.resource_record_name}"
   type     = "${aws_acm_certificate.quiz_api.domain_validation_options.0.resource_record_type}"
@@ -64,8 +64,8 @@ resource "aws_route53_record" "cert_validation" {
   ttl      = 60
 }
 
-resource "aws_acm_certificate_validation" "cert" {
+resource "aws_acm_certificate_validation" "api_cert_validation" {
   provider                = "aws.us-east-1"
   certificate_arn         = "${aws_acm_certificate.quiz_api.arn}"
-  validation_record_fqdns = ["${aws_route53_record.cert_validation.fqdn}"]
+  validation_record_fqdns = ["${aws_route53_record.api_cert_validation.fqdn}"]
 }
