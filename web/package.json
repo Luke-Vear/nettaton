@@ -38,9 +38,9 @@
     "standard": "^12.0.1"
   },
   "scripts": {
-    "start": "webpack-dev-server --config ./webpack.config.js --mode development",
+    "start": "NODE_ENV=dev webpack-dev-server --config ./webpack.config.js --mode development",
     "build-dev": "webpack --mode development",
-    "build": "webpack --mode production",
+    "build": "NODE_ENV=prod webpack --mode production",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",

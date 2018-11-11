@@ -1,9 +1,10 @@
 // Required for the sagas
 require('@babel/polyfill')
+const webpack = require('webpack');
 var path = require('path')
 
 const port = process.env.PORT || 3006
-process.env.NETTATON_ENV = process.env.ENV
+// process.env.NETTATON_ENV = process.env.ENV
 
 // Html plugin puts index.html into the dist dir with a script tag pointing to bundle.js
 const HtmlWebPackPlugin = require('html-webpack-plugin')
@@ -53,6 +54,11 @@ module.exports = {
         return getPath('style_[hash].css').replace('css/js', 'css')
       },
       allChunks: true
+    }),
+    new webpack.DefinePlugin({
+      'process.env': {
+        'NETTATON_ENV': JSON.stringify(process.env.NODE_ENV)
+      }
     })
   ],
   node: {
