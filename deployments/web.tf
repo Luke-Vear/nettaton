@@ -64,7 +64,7 @@ resource "aws_cloudfront_distribution" "web" {
     viewer_protocol_policy = "redirect-to-https"
   }
 
-  default_root_object = "index.html"
+  default_root_object = "${aws_s3_bucket_object.index.id}"
   enabled             = true
 
   origin {

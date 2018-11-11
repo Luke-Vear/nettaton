@@ -22,9 +22,7 @@ variable "db_capacity" {
 variable "r53_zone_id" {}
 
 # web
-variable "web_path" {
-  default = "../web/dist"
-}
+variable "web_deploy_dir" {}
 
 variable "web_js" {}
 
