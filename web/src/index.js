@@ -2,6 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './app/App'
 
+// Loads the css for all components
+import '../public/styles.scss';
+
 import { Provider } from 'react-redux'
 import { createStore, applyMiddleware, combineReducers } from 'redux'
 import createSagaMiddleware from 'redux-saga'
