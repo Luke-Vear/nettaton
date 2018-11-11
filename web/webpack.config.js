@@ -1,7 +1,7 @@
 // Required for the sagas
 require("@babel/polyfill");
 
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3006;
  
 // Html plugin puts index.html into the dist dir with a script tag pointing to bundle.js
 const HtmlWebPackPlugin = require("html-webpack-plugin");
