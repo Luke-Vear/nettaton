@@ -28,11 +28,11 @@ backend: cmd/createquestion/handler.zip cmd/readquestion/handler.zip cmd/answerq
 cmd/createquestion/handler.zip cmd/readquestion/handler.zip cmd/answerquestion/handler.zip:
 	./scripts/pipeline.sh build_backend
 
-plan-deploy: build ## Plan a deployment of artefacts and infrastructure.
+plan-deploy: ## Plan a deployment of artefacts and infrastructure.
 	./scripts/pipeline.sh plan
 .PHONY: plan-deploy
 
-deploy: build ## Deploy the artefacts and infrastructure.
+deploy: ## Deploy the artefacts and infrastructure.
 	./scripts/pipeline.sh deploy
 .PHONY: deploy
 

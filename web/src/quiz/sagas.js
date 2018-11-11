@@ -3,15 +3,18 @@ import axios from 'axios'
 import { types, actions } from './redux'
 
 function buildEndpoint () {
-  let env = process.env.NETTATON_ENV || 'dev'
-
-  let bar = 'https://api.'
-  if (env !== 'prod') {
-    bar += env + '.'
+  let env = 'f3dc7042-bc46-42d2-9f8f-41417d48ca4d'
+  if (env.length === 36 || env.length === 0) {
+    env = 'dev'
   }
-  bar += 'nettaton.com'
 
-  return bar
+  let ep = 'https://api.'
+  if (env !== 'prod') {
+    ep += env + '.'
+  }
+  ep += 'nettaton.com'
+
+  return ep
 }
 
 const endpoint = buildEndpoint()

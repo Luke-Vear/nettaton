@@ -11,6 +11,8 @@ CMD_DIR="${PROJECT_ROOT}/cmd"
 BUILD_LIST=$(find ${CMD_DIR}/* -type d)
 ARTEFACT_NAME="handler"
 
+WEB_DEPLOY_DIR="${PROJECT_ROOT}/web/deploy"
+
 cd ${PROJECT_ROOT}
 
 #### Test
@@ -37,13 +39,30 @@ build_backend() {
 }
 
 build_frontend() {
-  chkenv
   npm run build --prefix web
 }
 
 #### TF
 tf() {
   chkenv
+
+  ifrm ${WEB_DEPLOY_DIR}
+  cp -rpf "${PROJECT_ROOT}/web/dist" ${WEB_DEPLOY_DIR}
+
+  echo "ENV: ${ENV}"
+  sed -i "s/f3dc7042-bc46-42d2-9f8f-41417d48ca4d/$ENV/" $(find  ${WEB_DEPLOY_DIR} -name "*.js")
+
+  tf_args=(
+    "--var env=${ENV}"
+    "--var r53_zone_id=${R53_ZONE_ID}"
+    "--var web_deploy_dir=${WEB_DEPLOY_DIR}"
+    "--var web_js=$(find ${WEB_DEPLOY_DIR} -name "*.js" -exec basename {} \+)"
+    "--var web_css=$(find ${WEB_DEPLOY_DIR} -name "*.css" -exec basename {} \+)"
+  )
+
+  if [[ ${1} != plan ]]; then
+    tf_args+=("--auto-approve")
+  fi
 
   cd deployments
 
@@ -52,19 +71,9 @@ tf() {
     --backend-config="key=terraform.tfstate" \
     --backend-config="region=${BUCKET_REGION}"
 
-  tf_args=(
-    "--var env=${ENV}"
-    "--var r53_zone_id=${R53_ZONE_ID}"
-    "--var web_js=$(find  ../web/dist -name "*.js" -exec basename {} \+)"
-    "--var web_css=$(find  ../web/dist -name "*.css" -exec basename {} \+)"
-  )
-
-  if [[ ${1} != plan ]]; then
-    tf_args+=("--auto-approve")
-  fi
-
   terraform ${1} ${tf_args[@]}
-    
+  clean_tf
+
   cd - >/dev/null
 }
 
@@ -92,19 +101,28 @@ smoke() {
 }
 
 #### Clean
-clean() { 
-  find "${PROJECT_ROOT}" -name "*.zip" -exec rm {} \+
-
-  RM_TARGETS=(
+clean_tf() {
+  rm_targets=(
     "${PROJECT_ROOT}/deployments/.terraform/modules"
     "${PROJECT_ROOT}/deployments/.terraform/terraform.tfstate"
+  )
+
+  for rmt in ${rm_targets[@]}; do  
+    ifrm ${rmt}
+  done
+}
+clean() {
+  clean_tf
+
+  find "${PROJECT_ROOT}" -name "*.zip" -exec rm {} \+
+
+  rm_targets=(
     "${PROJECT_ROOT}/web/dist"
+    ${WEB_DEPLOY_DIR}
   )
   
-  for rmt in ${RM_TARGETS[@]}; do  
-    if [[ -a ${rmt} ]]; then 
-      rm -rf ${rmt}
-    fi
+  for rmt in ${rm_targets[@]}; do  
+    ifrm ${rmt}
   done
 }
 
@@ -113,6 +131,14 @@ chkenv() {
   if [[ -z ${ENV} ]]; then
     echo 'ENV must be set'
     exit 1
+  fi
+
+  export ${ENV}
+}
+
+ifrm() {
+  if [[ -a ${1} ]]; then 
+    rm -rf ${1}
   fi
 }
 
