@@ -1,7 +1,7 @@
 import React from 'react'
 
 export const QuestionDisplay = ({ question, error }) =>
-  <div>
+  <div className='question-display'>
     {contextMessage(question, error)}
   </div>
 

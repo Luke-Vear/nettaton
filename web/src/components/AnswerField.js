@@ -2,7 +2,7 @@ import React from 'react'
 import TextField from '@material-ui/core/TextField'
 
 export const AnswerField = ({ question, onChange }) =>
-  <div>
+  <div className='answer-field'>
     <TextField
       disabled={question === null}
       label='Answer'

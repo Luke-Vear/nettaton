@@ -4,7 +4,7 @@ import { types, actions } from './redux'
 
 function buildEndpoint () {
   let env = 'f3dc7042-bc46-42d2-9f8f-41417d48ca4d'
-  if (env.length === 36 || env.length === 0) {
+  if (env.length === 36) {
     env = 'dev'
   }
 

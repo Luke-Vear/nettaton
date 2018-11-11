@@ -1,3 +1,39 @@
+* {
+	font-family: 'Roboto', sans-serif;
+	text-align: center;
+}
+
+h1 {
+	font-size: 50px;
+	margin-bottom: 10px;
+}
+
+.question-display {
+	width: 300px;
+	height: 60px;
+	margin-top: 10px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.result-display {
+	width: 300px;
+	height: 40px;
+	margin-top: 10px;
+	margin-left: auto;
+	margin-right: auto;
+	font-size: 30px;
+	color: red;
+	&.correct {
+		color: green;
+	}
+}
+
+.answer-field {
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .inline-button {
 	display: inline;	
 }

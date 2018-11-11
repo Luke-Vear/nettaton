@@ -49,7 +49,6 @@ tf() {
   ifrm ${WEB_DEPLOY_DIR}
   cp -rpf "${PROJECT_ROOT}/web/dist" ${WEB_DEPLOY_DIR}
 
-  echo "ENV: ${ENV}"
   sed -i "s/f3dc7042-bc46-42d2-9f8f-41417d48ca4d/$ENV/" $(find  ${WEB_DEPLOY_DIR} -name "*.js")
 
   tf_args=(

@@ -3,7 +3,6 @@ require('@babel/polyfill')
 var path = require('path')
 
 const port = process.env.PORT || 3006
-process.env.NETTATON_ENV = process.env.ENV
 
 // Html plugin puts index.html into the dist dir with a script tag pointing to bundle.js
 const HtmlWebPackPlugin = require('html-webpack-plugin')
