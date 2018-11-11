@@ -23,7 +23,9 @@ variable "r53_zone_id" {}
 
 # web
 variable "web_path" {
-  default = "../web/build"
+  default = "../web/dist"
 }
 
 variable "web_js" {}
+
+variable "web_css" {}

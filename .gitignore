@@ -3,3 +3,4 @@
 *.zip
 *.tfstate
 *.wasm
+*.env

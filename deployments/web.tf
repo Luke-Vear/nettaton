@@ -23,23 +23,6 @@ resource "aws_s3_bucket" "web_frontend" {
   }
 }
 
-resource "aws_s3_bucket_object" "index" {
-  bucket       = "${aws_s3_bucket.web_frontend.id}"
-  key          = "index.html"
-  source       = "${var.web_path}/index.html"
-  etag         = "${md5(file("${var.web_path}/index.html"))}"
-  content_type = "text/html"
-}
-
-resource "aws_s3_bucket_object" "web_js" {
-  bucket        = "${aws_s3_bucket.web_frontend.id}"
-  key           = "static/js/${var.web_js}"
-  source        = "${var.web_path}/static/js/${var.web_js}"
-  etag          = "${md5(file("${var.web_path}/static/js/${var.web_js}"))}"
-  content_type  = "text/javascript"
-  cache_control = "max-age=15552000"                                        // 180 days
-}
-
 resource "aws_acm_certificate" "web" {
   provider          = "aws.us-east-1"
   domain_name       = "${local.endpoint}"
@@ -118,7 +101,7 @@ resource "aws_s3_bucket_policy" "web_cloudfront" {
 
 data "aws_iam_policy_document" "web_cloudfront" {
   statement {
-    sid = ""
+    sid     = ""
     actions = ["s3:GetObject"]
 
     principals {
@@ -130,7 +113,7 @@ data "aws_iam_policy_document" "web_cloudfront" {
   }
 
   statement {
-    sid = ""
+    sid     = ""
     actions = ["s3:ListBucket"]
 
     principals {

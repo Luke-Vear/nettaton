@@ -3,7 +3,7 @@ import axios from 'axios'
 import { types, actions } from './redux'
 
 function buildEndpoint () {
-  var env = process.env.ENV || 'dev'
+  let env = process.env.NETTATON_ENV || 'dev'
 
   let bar = 'https://api.'
   if (env !== 'prod') {

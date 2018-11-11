@@ -18,9 +18,9 @@ unittest: ## Test the go packages.
 
 build: unittest frontend backend ## Build the artefacts for the wasm webapp and the go services.
 
-frontend: web/build
+frontend: web/dist
 
-web/build:
+web/dist:
 	./scripts/pipeline.sh build_frontend
 
 backend: cmd/createquestion/handler.zip cmd/readquestion/handler.zip cmd/answerquestion/handler.zip
@@ -36,7 +36,7 @@ deploy: build ## Deploy the artefacts and infrastructure.
 	./scripts/pipeline.sh deploy
 .PHONY: deploy
 
-destroy: build ## Destroy infrastructure.
+destroy: ## Destroy infrastructure.
 	./scripts/pipeline.sh destroy
 .PHONY: deploy
 

@@ -37,7 +37,8 @@ build_backend() {
 }
 
 build_frontend() {
-  yarn --cwd web build
+  chkenv
+  npm run build --prefix web
 }
 
 #### TF
@@ -54,7 +55,8 @@ tf() {
   tf_args=(
     "--var env=${ENV}"
     "--var r53_zone_id=${R53_ZONE_ID}"
-    "--var web_js=$(find  ../web/build/static/js -name "*.js" -exec basename {} \+)"
+    "--var web_js=$(find  ../web/dist -name "*.js" -exec basename {} \+)"
+    "--var web_css=$(find  ../web/dist -name "*.css" -exec basename {} \+)"
   )
 
   if [[ ${1} != plan ]]; then
@@ -80,7 +82,7 @@ destroy() {
 
 #### Serve
 serve() {
-  yarn --cwd web start
+  npm run start --prefix web
 }
 
 #### Smoketest
@@ -92,10 +94,18 @@ smoke() {
 #### Clean
 clean() { 
   find "${PROJECT_ROOT}" -name "*.zip" -exec rm {} \+
-  find "${PROJECT_ROOT}" -name ".terraform" -exec rm -rf {} \+
-  if [[ -a web/build ]]; then 
-    rm -rf web/build
-  fi
+
+  RM_TARGETS=(
+    "${PROJECT_ROOT}/deployments/.terraform/modules"
+    "${PROJECT_ROOT}/deployments/.terraform/terraform.tfstate"
+    "${PROJECT_ROOT}/web/dist"
+  )
+  
+  for rmt in ${RM_TARGETS[@]}; do  
+    if [[ -a ${rmt} ]]; then 
+      rm -rf ${rmt}
+    fi
+  done
 }
 
 #### Misc

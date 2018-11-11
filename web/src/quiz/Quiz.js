@@ -1,10 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { actions } from './redux'
-import { BusyButton } from './BusyButton'
-import { ResultDisplay } from './ResultDisplay'
-import { AnswerField } from './AnswerField'
-import { QuestionDisplay } from './QuestionDisplay'
+import { BusyButton } from '../components/BusyButton'
+import { ResultDisplay } from '../components/ResultDisplay'
+import { AnswerField } from '../components/AnswerField'
+import { QuestionDisplay } from '../components/QuestionDisplay'
 
 export const Quiz = ({ busy, question, answer, correct, error, newQuestion, sendAnswer, updateAnswer }) =>
   <div>
